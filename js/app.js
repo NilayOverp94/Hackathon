@@ -385,13 +385,15 @@ class SignApp {
     });
   }
 
+  setStatus(text, state) {
+    // Safe no-op for status changes
+  }
+
   /**
    * Start MediaPipe Hands and Camera
    */
   async start() {
     try {
-      this.setStatus('Initializing model...', 'idle');
-
       if (typeof window.Hands === 'undefined') {
         throw new Error('MediaPipe Hands library not loaded from CDN.');
       }
