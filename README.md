@@ -163,7 +163,7 @@ The repository includes a ready-to-use [`vercel.json`](vercel.json) configuratio
 
 ---
 
-## 🎛️ Multi-Accent Voice Engine
+##  Multi-Accent Voice Engine
 
 SignPulse AI includes a native accent picker integrated directly into the action toolbar:
 - **Accents Supported**:
