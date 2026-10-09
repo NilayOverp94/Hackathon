@@ -359,12 +359,28 @@ export class GestureEngine {
     // 1. CONVERSATIONAL / COMMON SIGNS
     // ----------------------------------------------------
 
+    // "OK": Thumb & Index touching in circle, Middle, Ring, Pinky extended upright
+    const okPinchDist = Math.min(
+      pinches.thumbIndex,
+      distance3D(landmarks[4], landmarks[7]) / scale,
+      distance3D(landmarks[3], landmarks[8]) / scale
+    );
+    const okFingersUp = middle.isExtended && (pinky.isExtended || ring.isExtended || !pinky.isCurled);
+    if (okPinchDist < 0.40 && okFingersUp) {
+      return {
+        text: 'OK',
+        category: 'conversational',
+        confidence: 0.98,
+        description: 'Thumb & Index touching in circle with other 3 fingers upright (OK)'
+      };
+    }
+
     // "MIDDLE FINGER" / "FUCK YOU": Middle finger extended straight up, all other fingers curled into fist
     if (middle.isExtended && index.isCurled && ring.isCurled && pinky.isCurled && landmarks[12].y < landmarks[10].y) {
       return {
         text: 'FUCK YOU',
         category: 'conversational',
-        confidence: 0.98,
+        confidence: 1.00,
         description: 'Middle finger extended upright with fist closed (Fuck You)'
       };
     }

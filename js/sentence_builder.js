@@ -122,21 +122,28 @@ export class SentenceBuilder {
     } else if (token === 'CLEAR') {
       this.clear();
     } else if (gesture.category === 'conversational') {
-      // Conversational phrases are committed as full words
-      if (this.currentWord.length > 0) {
-        this.fullSentence = this.fullSentence.slice(0, -this.currentWord.length);
+      // If user is actively typing a word with fingerspelling and signs OK/F, treat as letter 'F'
+      if (token === 'OK' && this.currentWord.length > 0) {
+        this.currentWord += 'F';
+        this.fullSentence += 'F';
+        this.updatePredictions();
+      } else {
+        // Conversational phrases are committed as full words
+        if (this.currentWord.length > 0) {
+          this.fullSentence = this.fullSentence.slice(0, -this.currentWord.length);
+          this.currentWord = '';
+        }
+
+        if (this.fullSentence.length > 0 && !this.fullSentence.endsWith(' ')) {
+          this.fullSentence += ' ';
+        }
+        this.fullSentence += token;
         this.currentWord = '';
-      }
 
-      if (this.fullSentence.length > 0 && !this.fullSentence.endsWith(' ')) {
-        this.fullSentence += ' ';
+        // Suppress accidental letters for 400ms while user moves hand away
+        this.suppressLettersUntil = now + 400;
+        this.updatePredictions();
       }
-      this.fullSentence += token;
-      this.currentWord = '';
-
-      // Suppress accidental letters for 400ms while user moves hand away
-      this.suppressLettersUntil = now + 400;
-      this.updatePredictions();
     } else {
       // Alphabet fingerspelling
       this.currentWord += token;
@@ -258,6 +265,7 @@ export class SentenceBuilder {
       'THANK YOU': 'Thank you!',
       'I LOVE YOU': 'I love you!',
       'FUCK YOU': 'Fuck you!',
+      'OK': 'Okay!',
       'HELP': 'I need help, please.',
       'PLEASE': 'Please.',
       'YES': 'Yes, absolutely.',
