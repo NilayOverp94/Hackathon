@@ -127,6 +127,10 @@ export class SentenceBuilder {
         this.currentWord += 'F';
         this.fullSentence += 'F';
         this.updatePredictions();
+      } else if (token === 'PLEASE' && this.currentWord.length > 0) {
+        this.currentWord += 'Y';
+        this.fullSentence += 'Y';
+        this.updatePredictions();
       } else {
         // Conversational phrases are committed as full words
         if (this.currentWord.length > 0) {

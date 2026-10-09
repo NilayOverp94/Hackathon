@@ -47,18 +47,18 @@ export const ASL_SIGNS = [
   {
     name: 'NO',
     category: 'Conversational',
-    badge: 'Static',
-    description: 'Index and Middle fingers snapped closed onto thumb tip.',
-    icon: '🤏',
-    tips: 'Pinch index and middle fingertips quickly to thumb tip.'
+    badge: 'Two-Hand',
+    description: 'Cross index fingers of both hands to form an "X" cross.',
+    icon: '❌',
+    tips: 'Extend index fingers on both hands and cross them like an X.'
   },
   {
     name: 'PLEASE',
     category: 'Conversational',
-    badge: 'Dynamic',
-    description: 'Flat open palm rubbing chest area gently in a circular motion.',
-    icon: '🤲',
-    tips: 'Rub flat palm gently across your chest.'
+    badge: 'Static',
+    description: 'Thumb and pinky finger extended outward, middle three fingers curled in.',
+    icon: '🤙',
+    tips: 'Extend thumb and pinky finger (shaka / phone sign) for Please.'
   },
   {
     name: 'SORRY',

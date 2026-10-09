@@ -153,6 +153,42 @@ export class GestureEngine {
     const f1 = analyzeFingers(hand1);
     const f2 = analyzeFingers(hand2);
 
+    // NO (Two-Hand): 2 fingers of different hands crossed to form an "X"
+    const isHand1IndexExtended = f1.index.isExtended && (!f1.pinky.isExtended || f1.pinky.isCurled);
+    const isHand2IndexExtended = f2.index.isExtended && (!f2.pinky.isExtended || f2.pinky.isCurled);
+
+    if (isHand1IndexExtended && isHand2IndexExtended) {
+      const avgScale = (f1.scale + f2.scale) / 2;
+      const tip1 = hand1[8];
+      const tip2 = hand2[8];
+      const pip1 = hand1[6];
+      const pip2 = hand2[6];
+      const dip1 = hand1[7];
+      const dip2 = hand2[7];
+
+      const distTips = distance3D(tip1, tip2) / avgScale;
+      const distDips = distance3D(dip1, dip2) / avgScale;
+      const distCross1 = distance3D(tip1, pip2) / avgScale;
+      const distCross2 = distance3D(tip2, pip1) / avgScale;
+      const distCross3 = distance3D(tip1, dip2) / avgScale;
+      const distCross4 = distance3D(tip2, dip1) / avgScale;
+      const minDistance = Math.min(distTips, distDips, distCross1, distCross2, distCross3, distCross4);
+
+      const v1 = getVector(hand1[5], hand1[8]);
+      const v2 = getVector(hand2[5], hand2[8]);
+      const crossAngle = angleBetweenVectors(v1, v2);
+
+      // Two fingers crossing / intersecting at an angle
+      if (minDistance < 0.70 && crossAngle > 20 && crossAngle < 165) {
+        return {
+          text: 'NO',
+          category: 'conversational',
+          confidence: 0.98,
+          description: 'Two hands: 2 fingers of different hands crossed in an X (No)'
+        };
+      }
+    }
+
     // HELP gesture: One hand is a flat base palm, other hand is a thumbs-up on top moving up
     const isHand1FlatBase = f1.index.isExtended && f1.middle.isExtended && f1.ring.isExtended && f1.pinky.isExtended;
     const isHand2ThumbUp = f2.thumb.isUp && f2.index.isCurled && f2.middle.isCurled && f2.ring.isCurled && f2.pinky.isCurled;
@@ -302,15 +338,6 @@ export class GestureEngine {
       }
     }
 
-    // PLEASE: Flat open hand over chest area moving in small circular/lateral motion
-    if (allExtended && (motion.oscillationsX >= 1 && motion.oscillationsY >= 1) && landmarks[0].y > 0.38) {
-      return {
-        text: 'PLEASE',
-        category: 'conversational',
-        confidence: 0.93,
-        description: 'Flat open palm rubbing chest in a circle (Please)'
-      };
-    }
 
     // SORRY: Closed fist over chest area moving in small circular motion
     if (allCurled && (motion.oscillationsX >= 1 && motion.oscillationsY >= 1) && landmarks[0].y > 0.38) {
@@ -415,13 +442,13 @@ export class GestureEngine {
       };
     }
 
-    // "NO": Index and Middle fingertips pinched together onto Thumb tip, Ring and Pinky curled
-    if (pinches.thumbIndex < 0.32 && pinches.thumbMiddle < 0.32 && ring.isCurled && pinky.isCurled) {
+    // "PLEASE": Thumb and Pinky extended (Shaka/Phone handshape), Middle 3 fingers curled
+    if (thumb.isExtended && pinky.isExtended && !index.isExtended && !middle.isExtended && !ring.isExtended) {
       return {
-        text: 'NO',
+        text: 'PLEASE',
         category: 'conversational',
-        confidence: 0.94,
-        description: 'Index & Middle snapped onto Thumb (No / Negative)'
+        confidence: 0.98,
+        description: 'Thumb & Pinky extended (Please)'
       };
     }
 

@@ -99,8 +99,8 @@ The repository includes a ready-to-use [`vercel.json`](vercel.json) configuratio
 | **BAD / THUMBS DOWN** | 👎 | Fist with thumb pointing straight down. |
 | **EXCELLENT** | 👍👍 | Double Thumbs Up with both hands. |
 | **YES** | ✊ | Closed fist nodding vertically up and down. |
-| **NO** | 🤌 | Index and Middle fingertips snapping together onto Thumb tip. |
-| **PLEASE** | 🤲 | Flat open palm rubbing chest in a circular motion. |
+| **NO** | ❌ | Cross 2 fingers of different hands (index fingers) to form an X. |
+| **PLEASE** | 🤙 | Thumb and Pinky finger extended outward, middle 3 fingers curled in. |
 | **SORRY** | ✊ | Closed fist rubbing chest in a circular motion. |
 | **HAPPY** | ✋ | Flat open hand brushing upward across chest repeatedly. |
 | **MORE** | 🫳 | All 5 fingertips pinched together facing upright. |
