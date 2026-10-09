@@ -23,6 +23,7 @@ class SignApp {
     // Controls
     this.btnSpeak = document.getElementById('btnSpeak');
     this.btnClear = document.getElementById('btnClear');
+    this.btnModeToggle = document.getElementById('btnModeToggle');
     this.btnBackspace = document.getElementById('btnBackspace');
     this.btnMute = document.getElementById('btnMute');
     this.btnToggleVideo = document.getElementById('btnToggleVideo');
@@ -80,7 +81,7 @@ class SignApp {
       onHoldProgress: (progress, gesture) => {
         this.ui.setHoldProgress(progress, gesture);
         if (gesture) {
-          this.lastDetectedBadge.textContent = `${gesture.text} · ${Math.round(gesture.confidence * 100)}%`;
+          this.lastDetectedBadge.textContent = gesture.text;
           this.lastDetectedBadge.classList.add('visible');
         } else {
           this.lastDetectedBadge.classList.remove('visible');
@@ -127,6 +128,15 @@ class SignApp {
     this.btnClear?.addEventListener('click', () => {
       this.sentenceBuilder.clear();
       this.updateCaptionUI('');
+    });
+
+    // Words Mode vs Letters Mode Toggle
+    this.btnModeToggle?.addEventListener('click', () => {
+      this.gestureEngine.wordsOnly = !this.gestureEngine.wordsOnly;
+      this.btnModeToggle.textContent = this.gestureEngine.wordsOnly ? '💬 Words Mode' : '🔤 Letter Mode';
+      this.btnModeToggle.title = this.gestureEngine.wordsOnly
+        ? 'Words Mode: Only proper conversational words are detected (no single letters)'
+        : 'Letter Mode: Spelling individual letters A-Z';
     });
 
     // Backspace Button

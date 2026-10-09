@@ -64,17 +64,9 @@ export const ASL_SIGNS = [
     name: 'SORRY',
     category: 'Conversational',
     badge: 'Dynamic',
-    description: 'Closed fist rubbing chest in a circular motion.',
-    icon: '🥺',
-    tips: 'Make a fist and move it in small circles on your chest.'
-  },
-  {
-    name: 'HAPPY',
-    category: 'Conversational',
-    badge: 'Dynamic',
-    description: 'Flat open hand brushing upward repeatedly across chest.',
-    icon: '😊',
-    tips: 'Brush flat palm upward toward chin.'
+    description: 'Index finger extended, hovering/wagging side-to-side (right and left).',
+    icon: '☝️',
+    tips: 'Point index finger up and hover/wag it right and left for Sorry.'
   },
   {
     name: 'MORE',

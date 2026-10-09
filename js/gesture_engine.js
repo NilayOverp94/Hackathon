@@ -25,6 +25,9 @@ export class GestureEngine {
 
     // Last registered gesture timestamp to debounce
     this.lastDetection = null;
+
+    // Words-Only mode: only recognize conversational words & phrases, preventing random single letters (D, C, etc.)
+    this.wordsOnly = true;
   }
 
   /**
@@ -93,6 +96,20 @@ export class GestureEngine {
       }
     }
 
+    // Count index tip direction reversals in X (wagging/hovering index finger right and left)
+    let indexReversalsX = 0;
+    let prevIndexDiffX = 0;
+
+    for (let i = 1; i < n; i++) {
+      const idxDx = this.motionHistory[i].indexTip.x - this.motionHistory[i - 1].indexTip.x;
+      if (Math.abs(idxDx) > 0.005) {
+        if (prevIndexDiffX !== 0 && Math.sign(idxDx) !== Math.sign(prevIndexDiffX)) {
+          indexReversalsX++;
+        }
+        prevIndexDiffX = idxDx;
+      }
+    }
+
     const totalDisplacement = Math.hypot(
       last.centroid.x - first.centroid.x,
       last.centroid.y - first.centroid.y
@@ -102,6 +119,7 @@ export class GestureEngine {
       vx, vy, vz,
       oscillationsX: reversalsX,
       oscillationsY: reversalsY,
+      indexOscillationsX: indexReversalsX,
       totalDisplacement
     };
   }
@@ -314,20 +332,21 @@ export class GestureEngine {
       }
     }
 
-    // WHERE: Index finger pointing up, oscillating / wagging side-to-side
-    if (f.index.isExtended && !f.middle.isExtended && !f.ring.isExtended && !f.pinky.isExtended) {
-      if (motion.oscillationsX >= 2) {
+    // SORRY: Index finger extended, hovering / wagging side-to-side (right and left)
+    const isPointingIndex = f.index.isExtended && (!f.middle.isExtended || f.middle.isCurled) && !f.ring.isExtended && !f.pinky.isExtended;
+    if (isPointingIndex) {
+      if (motion.indexOscillationsX >= 1 || motion.oscillationsX >= 1 || Math.abs(motion.vx) > 0.08) {
         return {
-          text: 'WHERE',
+          text: 'SORRY',
           category: 'conversational',
-          confidence: 0.94,
-          description: 'Index finger pointing up, wagging side to side (Where)'
+          confidence: 0.98,
+          description: 'Index finger hovering right and left (Sorry)'
         };
       }
     }
 
-    // J: Pinky extended carving a J curve downward
-    if (f.pinky.isExtended && f.index.isCurled && f.middle.isCurled && f.ring.isCurled) {
+    // J: Pinky extended carving a J curve downward (in fingerspell mode)
+    if (!this.wordsOnly && f.pinky.isExtended && f.index.isCurled && f.middle.isCurled && f.ring.isCurled) {
       if (motion.totalDisplacement > 0.12 && (motion.oscillationsX >= 1 || motion.vy > 0.12)) {
         return {
           text: 'J',
@@ -336,27 +355,6 @@ export class GestureEngine {
           description: 'Pinky drawing a J curve in the air (Letter J)'
         };
       }
-    }
-
-
-    // SORRY: Closed fist over chest area moving in small circular motion
-    if (allCurled && (motion.oscillationsX >= 1 && motion.oscillationsY >= 1) && landmarks[0].y > 0.38) {
-      return {
-        text: 'SORRY',
-        category: 'conversational',
-        confidence: 0.93,
-        description: 'Fist rubbing chest in a circle (Sorry)'
-      };
-    }
-
-    // HAPPY: Flat open hand brushing upward repeatedly
-    if (allExtended && motion.vy < -0.12 && motion.oscillationsY >= 1 && landmarks[0].y > 0.35) {
-      return {
-        text: 'HAPPY',
-        category: 'conversational',
-        confidence: 0.92,
-        description: 'Flat hand brushing upward across chest (Happy)'
-      };
     }
 
     // THANK YOU: Flat hand starting near chin/face moving outward toward camera
@@ -540,6 +538,25 @@ export class GestureEngine {
           description: 'Open 5 hand with thumb touching chest (Fine / Doing Well)'
         };
       }
+    }
+
+    // ----------------------------------------------------
+    // In Words-Only Mode, return null here to avoid detecting isolated letters (D, C, A, etc.)
+    // ----------------------------------------------------
+    if (this.wordsOnly) {
+      // Check SPACE before exiting
+      if (index.isExtended && middle.isExtended && ring.isExtended && pinky.isExtended) {
+        const vPalm = getVector(landmarks[0], landmarks[9]);
+        if (Math.abs(vPalm.x) > Math.abs(vPalm.y) * 1.1) {
+          return {
+            text: 'SPACE',
+            category: 'control',
+            confidence: 0.95,
+            description: 'Flat palm horizontal (Space / Next Word)'
+          };
+        }
+      }
+      return null;
     }
 
     // ----------------------------------------------------

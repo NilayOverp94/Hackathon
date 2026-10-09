@@ -95,8 +95,7 @@ The repository includes a ready-to-use [`vercel.json`](vercel.json) configuratio
 | **YES** | ✊ | Closed fist nodding vertically up and down. |
 | **NO** | ❌ | Cross 2 fingers of different hands (index fingers) to form an X. |
 | **PLEASE** | 🤙 | Thumb and Pinky finger extended outward, middle 3 fingers curled in. |
-| **SORRY** | ✊ | Closed fist rubbing chest in a circular motion. |
-| **HAPPY** | ✋ | Flat open hand brushing upward across chest repeatedly. |
+| **SORRY** | ☝️ | Index finger extended, hovering/wagging side-to-side (right and left). |
 | **MORE** | 🫳 | All 5 fingertips pinched together facing upright. |
 | **STOP** | ✋ | Flat vertical palm facing directly toward the camera. |
 | **WHERE** | 🤷 | Index finger extended shaking side-to-side in a question. |

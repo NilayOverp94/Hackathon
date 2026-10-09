@@ -283,7 +283,6 @@ export class SentenceBuilder {
       'EAT': 'I would like food.',
       'DRINK': 'I would like a drink.',
       'TIME': 'What time is it?',
-      'HAPPY': 'I am so happy!',
       'SORRY': 'I am sorry.',
       'FINE': 'I am doing fine.',
       'YOU': 'You.',
