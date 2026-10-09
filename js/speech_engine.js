@@ -18,10 +18,32 @@ export class SpeechEngine {
     this.onStartSpeaking = null;
     this.onEndSpeaking = null;
 
+    this.onVoicesLoaded = null;
+
     // Web Audio Context for UI audio cues (chimes)
     this.audioCtx = null;
 
     this.initVoices();
+  }
+
+  getAccentLabel(lang) {
+    if (!lang) return '🌐 Other';
+    const l = lang.toLowerCase();
+    if (l.startsWith('en-us')) return '🇺🇸 US English';
+    if (l.startsWith('en-gb')) return '🇬🇧 British English';
+    if (l.startsWith('en-in')) return '🇮🇳 Indian English';
+    if (l.startsWith('en-au')) return '🇦🇺 Australian English';
+    if (l.startsWith('en-ca')) return '🇨🇦 Canadian English';
+    if (l.startsWith('en-ie')) return '🇮🇪 Irish English';
+    if (l.startsWith('en-za')) return '🇿🇦 South African English';
+    if (l.startsWith('en-nz')) return '🇳🇿 New Zealand English';
+    if (l.startsWith('en')) return '🌐 English';
+    if (l.startsWith('hi')) return '🇮🇳 Hindi';
+    if (l.startsWith('es')) return '🇪🇸 Spanish';
+    if (l.startsWith('fr')) return '🇫🇷 French';
+    if (l.startsWith('de')) return '🇩🇪 German';
+    if (l.startsWith('ja')) return '🇯🇵 Japanese';
+    return `🌐 ${lang}`;
   }
 
   initVoices() {
@@ -32,13 +54,24 @@ export class SpeechEngine {
 
     const loadVoices = () => {
       this.voices = this.synth.getVoices();
-      // Prefer modern natural English voices
-      const preferred = this.voices.find(v =>
-        (v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Siri') || v.name.includes('Daniel')) &&
-        v.lang.startsWith('en')
-      ) || this.voices.find(v => v.lang.startsWith('en')) || this.voices[0];
+      if (!this.voices || this.voices.length === 0) return;
 
-      this.selectedVoice = preferred || null;
+      const savedURI = localStorage.getItem('signpulse_voice');
+      if (savedURI) {
+        this.selectedVoice = this.voices.find(v => v.voiceURI === savedURI || v.name === savedURI) || null;
+      }
+
+      if (!this.selectedVoice) {
+        // Prefer natural voices
+        this.selectedVoice = this.voices.find(v =>
+          (v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Siri') || v.name.includes('Daniel') || v.name.includes('Rishi')) &&
+          v.lang.startsWith('en')
+        ) || this.voices.find(v => v.lang.startsWith('en')) || this.voices[0];
+      }
+
+      if (typeof this.onVoicesLoaded === 'function') {
+        this.onVoicesLoaded(this.voices);
+      }
     };
 
     loadVoices();
@@ -53,7 +86,12 @@ export class SpeechEngine {
 
   setVoice(voiceURI) {
     const v = this.voices.find(item => item.voiceURI === voiceURI || item.name === voiceURI);
-    if (v) this.selectedVoice = v;
+    if (v) {
+      this.selectedVoice = v;
+      try {
+        localStorage.setItem('signpulse_voice', voiceURI);
+      } catch (err) {}
+    }
   }
 
   speak(text, { force = false } = {}) {

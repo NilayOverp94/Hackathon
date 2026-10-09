@@ -34,6 +34,7 @@ class SignApp {
     this.fpsText = document.getElementById('fpsText');
     this.latencyText = document.getElementById('latencyText');
     this.predictiveBar = document.getElementById('predictiveBar');
+    this.voiceSelect = document.getElementById('voiceSelect');
 
     // Modals
     this.dictionaryModal = document.getElementById('dictionaryModal');
@@ -60,8 +61,14 @@ class SignApp {
   }
 
   initEngines() {
-    // 1. Text to Speech
+    // 1. Text to Speech with Accent and Voice Support
     this.speech = new SpeechEngine();
+    this.speech.onVoicesLoaded = (voices) => {
+      this.populateVoiceSelect(voices);
+    };
+    if (this.speech.voices && this.speech.voices.length > 0) {
+      this.populateVoiceSelect(this.speech.voices);
+    }
 
     // 2. Gesture Recognizer
     this.gestureEngine = new GestureEngine();
@@ -210,6 +217,16 @@ class SignApp {
       this.renderDictionary(this.activeDictCategory, this.activeDictSearch);
     });
 
+    // Voice & Accent Selection Change
+    this.voiceSelect?.addEventListener('change', (e) => {
+      const selectedUri = e.target.value;
+      if (selectedUri) {
+        this.speech.setVoice(selectedUri);
+        // Play brief voice preview
+        this.speech.speak('Voice accent set.', { force: true });
+      }
+    });
+
     // Keyboard Shortcuts
     window.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
@@ -226,6 +243,60 @@ class SignApp {
         this.toggleFullscreen();
       }
     });
+  }
+
+  populateVoiceSelect(voices) {
+    if (!this.voiceSelect || !voices || voices.length === 0) return;
+
+    // Group voices by accent / language
+    const groups = {};
+    for (const v of voices) {
+      const accent = this.speech.getAccentLabel(v.lang);
+      if (!groups[accent]) groups[accent] = [];
+      groups[accent].push(v);
+    }
+
+    this.voiceSelect.innerHTML = '';
+
+    // Prioritized order: US, UK, India, Australia, Canada, Ireland, others
+    const priority = [
+      '🇺🇸 US English',
+      '🇬🇧 British English',
+      '🇮🇳 Indian English',
+      '🇦🇺 Australian English',
+      '🇨🇦 Canadian English',
+      '🇮🇪 Irish English'
+    ];
+
+    const sortedAccents = Object.keys(groups).sort((a, b) => {
+      const idxA = priority.indexOf(a);
+      const idxB = priority.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+
+    for (const accent of sortedAccents) {
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = accent;
+      for (const v of groups[accent]) {
+        const option = document.createElement('option');
+        option.value = v.voiceURI;
+        // Clean display name
+        const cleanName = v.name
+          .replace(/(Google|Microsoft|Apple)\s*/gi, '')
+          .replace(/\s*\([^)]*\)/g, '')
+          .trim() || v.name;
+        option.textContent = cleanName;
+
+        if (this.speech.selectedVoice && (this.speech.selectedVoice.voiceURI === v.voiceURI || this.speech.selectedVoice.name === v.name)) {
+          option.selected = true;
+        }
+        optgroup.appendChild(option);
+      }
+      this.voiceSelect.appendChild(optgroup);
+    }
   }
 
   toggleFullscreen() {

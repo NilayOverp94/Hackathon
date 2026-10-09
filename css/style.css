@@ -501,6 +501,70 @@ body.neutral-theme {
   color: var(--text-muted);
 }
 
+/* Voice & Accent Selector */
+.voice-picker-container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  background-color: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: 6px;
+  padding: 0 0.5rem;
+  transition: all 0.15s ease;
+}
+
+.voice-picker-container:hover {
+  background-color: var(--btn-secondary-hover);
+  border-color: #52525b;
+}
+
+.voice-picker-container:focus-within {
+  border-color: #a1a1aa;
+}
+
+.voice-icon {
+  font-size: 0.85rem;
+  margin-right: 0.25rem;
+  user-select: none;
+  opacity: 0.8;
+}
+
+.voice-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  color: var(--btn-secondary-text);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  border: none;
+  padding: 0.55rem 1.4rem 0.55rem 0.2rem;
+  cursor: pointer;
+  outline: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.2rem center;
+  max-width: 170px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.voice-select optgroup {
+  background-color: #18181b;
+  color: #a1a1aa;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.voice-select option {
+  background-color: #27272a;
+  color: #f4f4f5;
+  font-size: 0.82rem;
+  font-weight: 400;
+  padding: 0.35rem;
+}
+
 /* Transcript History Section */
 .transcript-section {
   display: flex;
