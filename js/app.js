@@ -16,9 +16,9 @@ class SignApp {
 
     // UI Elements
     this.captionText = document.getElementById('captionText');
+    this.placeholderText = document.getElementById('placeholderText');
     this.lastDetectedBadge = document.getElementById('lastDetectedBadge');
     this.historyList = document.getElementById('historyList');
-    this.statusIndicator = document.getElementById('systemStatusBadge');
 
     // Controls
     this.btnSpeak = document.getElementById('btnSpeak');
@@ -29,7 +29,6 @@ class SignApp {
     this.btnResumeVideo = document.getElementById('btnResumeVideo');
     this.videoOffOverlay = document.getElementById('videoOffOverlay');
     this.btnFullscreen = document.getElementById('btnFullscreen');
-    this.btnFullscreenHeader = document.getElementById('btnFullscreenHeader');
     this.btnOverlayFullscreen = document.getElementById('btnOverlayFullscreen');
     this.btnClearHistory = document.getElementById('btnClearHistory');
     this.fpsText = document.getElementById('fpsText');
@@ -134,7 +133,6 @@ class SignApp {
 
     // Fullscreen Toggles
     this.btnFullscreen?.addEventListener('click', () => this.toggleFullscreen());
-    this.btnFullscreenHeader?.addEventListener('click', () => this.toggleFullscreen());
     this.btnOverlayFullscreen?.addEventListener('click', () => this.toggleFullscreen());
 
     const onFullscreenChange = () => {
@@ -144,7 +142,6 @@ class SignApp {
       }
       const fsLabel = isFs ? '✕ Exit Fullscreen' : '⛶ Fullscreen';
       if (this.btnFullscreen) this.btnFullscreen.textContent = fsLabel;
-      if (this.btnFullscreenHeader) this.btnFullscreenHeader.textContent = fsLabel;
       if (this.btnOverlayFullscreen) this.btnOverlayFullscreen.textContent = isFs ? '✕' : '⛶';
 
       // Resize canvas to match video dimensions
@@ -217,47 +214,101 @@ class SignApp {
     }
   }
 
-  toggleVideo(enable) {
-    if (typeof enable === 'boolean') {
-      this.isVideoActive = enable;
+  async toggleVideo(enable) {
+    const shouldEnable = typeof enable === 'boolean' ? enable : !this.isVideoActive;
+    if (shouldEnable) {
+      await this.startCamera();
     } else {
-      this.isVideoActive = !this.isVideoActive;
-    }
-
-    const stream = this.videoElement.srcObject;
-    if (stream) {
-      stream.getVideoTracks().forEach(track => {
-        track.enabled = this.isVideoActive;
-      });
-    }
-
-    if (!this.isVideoActive) {
-      const ctx = this.canvasElement.getContext('2d');
-      ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
-      if (this.videoOffOverlay) this.videoOffOverlay.style.display = 'flex';
-      if (this.btnToggleVideo) {
-        this.btnToggleVideo.textContent = '📹 Camera Off';
-        this.btnToggleVideo.classList.add('muted');
-      }
-      this.setStatus('Camera paused', 'idle');
-      if (this.lastDetectedBadge) {
-        this.lastDetectedBadge.classList.remove('visible');
-      }
-    } else {
-      if (this.videoOffOverlay) this.videoOffOverlay.style.display = 'none';
-      if (this.btnToggleVideo) {
-        this.btnToggleVideo.textContent = '📹 Camera On';
-        this.btnToggleVideo.classList.remove('muted');
-      }
-      this.setStatus('Tracking active', 'online');
+      await this.stopCamera();
     }
   }
 
-  setStatus(text, state = 'online') {
-    if (!this.statusIndicator) return;
-    const label = this.statusIndicator.querySelector('.status-label');
-    if (label) label.textContent = text;
-    this.statusIndicator.className = `status-indicator ${state}`;
+  async startCamera() {
+    this.isVideoActive = true;
+    if (this.videoOffOverlay) this.videoOffOverlay.style.display = 'none';
+    if (this.btnToggleVideo) {
+      this.btnToggleVideo.textContent = '📹 Camera On';
+      this.btnToggleVideo.classList.remove('muted');
+    }
+
+    try {
+      if (typeof window.Camera !== 'undefined') {
+        this.cameraInstance = new window.Camera(this.videoElement, {
+          onFrame: async () => {
+            if (this.handsInstance && this.isVideoActive) {
+              await this.handsInstance.send({ image: this.videoElement });
+            }
+          },
+          width: 1280,
+          height: 720
+        });
+        await this.cameraInstance.start();
+      } else {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }
+        });
+        this.videoElement.srcObject = stream;
+        await this.videoElement.play();
+
+        if (!this.frameLoopRunning) {
+          this.frameLoopRunning = true;
+          const processVideoFrame = async () => {
+            if (this.videoElement && this.videoElement.readyState >= 2 && this.isVideoActive && this.handsInstance) {
+              await this.handsInstance.send({ image: this.videoElement });
+            }
+            if (this.frameLoopRunning) {
+              requestAnimationFrame(processVideoFrame);
+            }
+          };
+          requestAnimationFrame(processVideoFrame);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to start camera:', err);
+    }
+  }
+
+  async stopCamera() {
+    this.isVideoActive = false;
+    this.frameLoopRunning = false;
+
+    // 1. Physically stop Camera instance if active
+    if (this.cameraInstance) {
+      try {
+        await this.cameraInstance.stop();
+      } catch (err) {
+        console.warn('cameraInstance.stop error:', err);
+      }
+      this.cameraInstance = null;
+    }
+
+    // 2. Physically release all hardware MediaStreamTracks so the MacBook green LED shuts off
+    const stream = this.videoElement.srcObject;
+    if (stream && typeof stream.getTracks === 'function') {
+      stream.getTracks().forEach((track) => {
+        try {
+          track.stop();
+        } catch (err) {
+          console.warn('Track stop error:', err);
+        }
+      });
+      this.videoElement.srcObject = null;
+    }
+
+    // 3. Clear canvas & hide detection badge
+    if (this.canvasElement) {
+      const ctx = this.canvasElement.getContext('2d');
+      ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+    }
+
+    if (this.videoOffOverlay) this.videoOffOverlay.style.display = 'flex';
+    if (this.btnToggleVideo) {
+      this.btnToggleVideo.textContent = '📹 Camera Off';
+      this.btnToggleVideo.classList.add('muted');
+    }
+    if (this.lastDetectedBadge) {
+      this.lastDetectedBadge.classList.remove('visible');
+    }
   }
 
   renderPredictions(predictions) {
@@ -280,10 +331,10 @@ class SignApp {
 
   updateCaptionUI(text) {
     if (!this.captionText) return;
-    if (!text || text.trim() === '') {
-      this.captionText.innerHTML = '<span class="placeholder-caption">Show a hand gesture to the camera to begin...</span>';
-    } else {
-      this.captionText.textContent = text;
+    const hasText = text && text.trim().length > 0;
+    this.captionText.textContent = text || '';
+    if (this.placeholderText) {
+      this.placeholderText.style.display = hasText ? 'none' : 'inline';
     }
   }
 
@@ -376,38 +427,10 @@ class SignApp {
 
       this.videoElement.addEventListener('loadedmetadata', updateCanvasSize);
 
-      if (typeof window.Camera !== 'undefined') {
-        this.cameraInstance = new window.Camera(this.videoElement, {
-          onFrame: async () => {
-            if (this.handsInstance && this.isVideoActive) {
-              await this.handsInstance.send({ image: this.videoElement });
-            }
-          },
-          width: 1280,
-          height: 720
-        });
-
-        await this.cameraInstance.start();
-      } else {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }
-        });
-        this.videoElement.srcObject = stream;
-        await this.videoElement.play();
-
-        const processVideoFrame = async () => {
-          if (this.videoElement.readyState >= 2 && this.isVideoActive) {
-            await this.handsInstance.send({ image: this.videoElement });
-          }
-          requestAnimationFrame(processVideoFrame);
-        };
-        requestAnimationFrame(processVideoFrame);
-      }
-
-      this.setStatus('Live · 60 FPS', 'online');
+      await this.startCamera();
+      this.updateCaptionUI('');
     } catch (err) {
       console.error('Failed to initialize webcam or MediaPipe:', err);
-      this.setStatus(`Error: ${err.message || 'Camera permission required'}`, 'error');
     }
   }
 }

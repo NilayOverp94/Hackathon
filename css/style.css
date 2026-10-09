@@ -395,8 +395,13 @@ body.neutral-theme {
 .caption-box {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  min-height: 44px;
+  min-height: 48px;
+}
+
+.caption-text-wrapper {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
 }
 
 .caption-text {
@@ -404,20 +409,27 @@ body.neutral-theme {
   font-weight: 600;
   color: var(--text-primary);
   word-break: break-word;
+  line-height: 1.2;
 }
 
 .placeholder-caption {
   color: var(--text-muted);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 400;
+  margin-left: 0.4rem;
+  user-select: none;
+  pointer-events: none;
 }
 
 .blinking-cursor {
   display: inline-block;
-  width: 2px;
-  height: 22px;
+  width: 2.5px;
+  height: 1.35rem;
   background-color: var(--text-primary);
   animation: cursorBlink 1s infinite;
+  margin-left: 1px;
+  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 @keyframes cursorBlink {

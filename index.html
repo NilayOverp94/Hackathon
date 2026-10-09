@@ -25,18 +25,11 @@
     <header class="app-header">
       <div class="header-left">
         <h1 class="brand-title">Sign Language Interpreter</h1>
-        <div id="systemStatusBadge" class="status-indicator">
-          <span class="status-dot"></span>
-          <span class="status-label">Initializing camera...</span>
-        </div>
       </div>
 
       <div class="header-right">
         <button id="btnDictionary" class="btn btn-secondary">
           ASL Reference
-        </button>
-        <button id="btnFullscreenHeader" class="btn btn-secondary" title="Toggle Fullscreen View">
-          ⛶ Fullscreen
         </button>
       </div>
     </header>
@@ -86,10 +79,11 @@
             <span class="caption-instructions">Hold steady · Flat palm auto-completes word / space · Swipe left to delete</span>
           </div>
           <div class="caption-box">
-            <p id="captionText" class="caption-text">
-              <span class="placeholder-caption">Show a hand gesture to the camera to begin...</span>
-            </p>
-            <span class="blinking-cursor"></span>
+            <span class="caption-text-wrapper">
+              <span id="captionText" class="caption-text"></span>
+              <span class="blinking-cursor"></span>
+              <span id="placeholderText" class="placeholder-caption">Show a hand gesture to the camera to begin...</span>
+            </span>
           </div>
         </div>
 
