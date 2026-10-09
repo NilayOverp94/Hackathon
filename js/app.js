@@ -10,6 +10,7 @@ import { ASL_SIGNS } from './asl_dictionary.js';
 
 class SignApp {
   constructor() {
+    this.viewportContainer = document.getElementById('viewportContainer');
     this.videoElement = document.getElementById('webcam');
     this.canvasElement = document.getElementById('hudCanvas');
 
@@ -17,7 +18,7 @@ class SignApp {
     this.captionText = document.getElementById('captionText');
     this.lastDetectedBadge = document.getElementById('lastDetectedBadge');
     this.historyList = document.getElementById('historyList');
-    this.statusBadge = document.getElementById('systemStatusBadge');
+    this.statusIndicator = document.getElementById('systemStatusBadge');
 
     // Controls
     this.btnSpeak = document.getElementById('btnSpeak');
@@ -27,8 +28,10 @@ class SignApp {
     this.btnToggleVideo = document.getElementById('btnToggleVideo');
     this.btnResumeVideo = document.getElementById('btnResumeVideo');
     this.videoOffOverlay = document.getElementById('videoOffOverlay');
-    this.toggleAutoSpeak = document.getElementById('toggleAutoSpeak');
-    this.voiceSelect = document.getElementById('voiceSelect');
+    this.btnFullscreen = document.getElementById('btnFullscreen');
+    this.btnFullscreenHeader = document.getElementById('btnFullscreenHeader');
+    this.btnOverlayFullscreen = document.getElementById('btnOverlayFullscreen');
+    this.btnClearHistory = document.getElementById('btnClearHistory');
 
     // Modals
     this.dictionaryModal = document.getElementById('dictionaryModal');
@@ -51,7 +54,6 @@ class SignApp {
   initEngines() {
     // 1. Text to Speech
     this.speech = new SpeechEngine();
-    setTimeout(() => this.populateVoiceList(), 500);
 
     // 2. Gesture Recognizer
     this.gestureEngine = new GestureEngine();
@@ -119,6 +121,27 @@ class SignApp {
       this.toggleVideo(true);
     });
 
+    // Fullscreen Toggles
+    this.btnFullscreen?.addEventListener('click', () => this.toggleFullscreen());
+    this.btnFullscreenHeader?.addEventListener('click', () => this.toggleFullscreen());
+    this.btnOverlayFullscreen?.addEventListener('click', () => this.toggleFullscreen());
+
+    document.addEventListener('fullscreenchange', () => {
+      const isFs = !!document.fullscreenElement;
+      const fsLabel = isFs ? '✕ Exit Fullscreen' : '⛶ Fullscreen';
+      if (this.btnFullscreen) this.btnFullscreen.textContent = fsLabel;
+      if (this.btnFullscreenHeader) this.btnFullscreenHeader.textContent = fsLabel;
+      if (this.btnOverlayFullscreen) this.btnOverlayFullscreen.textContent = isFs ? '✕' : '⛶';
+
+      // Resize canvas to match new dimensions
+      setTimeout(() => {
+        const vw = this.videoElement.videoWidth || 640;
+        const vh = this.videoElement.videoHeight || 480;
+        this.canvasElement.width = vw;
+        this.canvasElement.height = vh;
+      }, 100);
+    });
+
     // Mute/Unmute Toggle
     this.btnMute?.addEventListener('click', () => {
       const isMuted = this.speech.toggleMute();
@@ -126,14 +149,10 @@ class SignApp {
       this.btnMute.textContent = isMuted ? '🔇 Voice Off' : '🔊 Voice On';
     });
 
-    // Auto-Speak Toggle
-    this.toggleAutoSpeak?.addEventListener('change', (e) => {
-      this.autoSpeak = e.target.checked;
-    });
-
-    // Voice Selection
-    this.voiceSelect?.addEventListener('change', (e) => {
-      this.speech.setVoice(e.target.value);
+    // Clear History Button
+    this.btnClearHistory?.addEventListener('click', () => {
+      this.sentenceBuilder.history = [];
+      this.updateHistoryUI();
     });
 
     // Dictionary Modal
@@ -157,8 +176,26 @@ class SignApp {
         this.updateCaptionUI(this.sentenceBuilder.getFormattedSentence());
       } else if (e.code === 'Enter') {
         this.btnSpeak?.click();
+      } else if (e.code === 'KeyF' && !e.metaKey && !e.ctrlKey) {
+        this.toggleFullscreen();
       }
     });
+  }
+
+  toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      if (this.viewportContainer.requestFullscreen) {
+        this.viewportContainer.requestFullscreen().catch(err => {
+          console.warn('Fullscreen request failed:', err);
+        });
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(err => {
+          console.warn('Exit fullscreen failed:', err);
+        });
+      }
+    }
   }
 
   toggleVideo(enable) {
@@ -180,49 +217,34 @@ class SignApp {
       ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
       if (this.videoOffOverlay) this.videoOffOverlay.style.display = 'flex';
       if (this.btnToggleVideo) {
-        this.btnToggleVideo.textContent = '📹 Video Off';
+        this.btnToggleVideo.textContent = '📹 Camera Off';
         this.btnToggleVideo.classList.add('muted');
       }
-      if (this.statusBadge) {
-        this.statusBadge.textContent = 'Camera Off';
-        this.statusBadge.className = 'status-badge status-loading';
-      }
+      this.setStatus('Camera paused', 'idle');
       if (this.lastDetectedBadge) {
         this.lastDetectedBadge.classList.remove('visible');
       }
     } else {
       if (this.videoOffOverlay) this.videoOffOverlay.style.display = 'none';
       if (this.btnToggleVideo) {
-        this.btnToggleVideo.textContent = '📹 Video On';
+        this.btnToggleVideo.textContent = '📹 Camera On';
         this.btnToggleVideo.classList.remove('muted');
       }
-      if (this.statusBadge) {
-        this.statusBadge.textContent = 'Operational · 60 FPS';
-        this.statusBadge.className = 'status-badge status-online';
-      }
+      this.setStatus('Tracking active', 'online');
     }
   }
 
-  populateVoiceList() {
-    const voices = this.speech.getAvailableVoices();
-    if (!this.voiceSelect || voices.length === 0) return;
-
-    this.voiceSelect.innerHTML = '';
-    voices.forEach((v) => {
-      const option = document.createElement('option');
-      option.value = v.voiceURI;
-      option.textContent = `${v.name} (${v.lang})`;
-      if (this.speech.selectedVoice && this.speech.selectedVoice.voiceURI === v.voiceURI) {
-        option.selected = true;
-      }
-      this.voiceSelect.appendChild(option);
-    });
+  setStatus(text, state = 'online') {
+    if (!this.statusIndicator) return;
+    const label = this.statusIndicator.querySelector('.status-label');
+    if (label) label.textContent = text;
+    this.statusIndicator.className = `status-indicator ${state}`;
   }
 
   updateCaptionUI(text) {
     if (!this.captionText) return;
     if (!text || text.trim() === '') {
-      this.captionText.innerHTML = '<span class="placeholder-caption">Show a hand gesture to begin...</span>';
+      this.captionText.innerHTML = '<span class="placeholder-caption">Show a hand gesture to the camera to begin...</span>';
     } else {
       this.captionText.textContent = text;
     }
@@ -234,7 +256,7 @@ class SignApp {
     this.historyList.innerHTML = '';
 
     if (history.length === 0) {
-      this.historyList.innerHTML = '<div class="empty-state">Spoken sentences will be saved here.</div>';
+      this.historyList.innerHTML = '<div class="empty-state">Spoken sentences will be recorded here for reference.</div>';
       return;
     }
 
@@ -265,7 +287,7 @@ class SignApp {
       card.innerHTML = `
         <div class="dict-card-header">
           <span class="dict-icon">${sign.icon}</span>
-          <span class="dict-badge badge-${sign.category.toLowerCase()}">${sign.badge}</span>
+          <span class="dict-badge">${sign.badge}</span>
         </div>
         <h4 class="dict-name">${sign.name}</h4>
         <p class="dict-desc">${sign.description}</p>
@@ -280,10 +302,7 @@ class SignApp {
    */
   async start() {
     try {
-      if (this.statusBadge) {
-        this.statusBadge.textContent = 'Initializing Camera & Model...';
-        this.statusBadge.className = 'status-badge status-loading';
-      }
+      this.setStatus('Initializing model...', 'idle');
 
       if (typeof window.Hands === 'undefined') {
         throw new Error('MediaPipe Hands library not loaded from CDN.');
@@ -348,16 +367,10 @@ class SignApp {
         requestAnimationFrame(processVideoFrame);
       }
 
-      if (this.statusBadge) {
-        this.statusBadge.textContent = 'Operational · 60 FPS';
-        this.statusBadge.className = 'status-badge status-online';
-      }
+      this.setStatus('Live · 60 FPS', 'online');
     } catch (err) {
       console.error('Failed to initialize webcam or MediaPipe:', err);
-      if (this.statusBadge) {
-        this.statusBadge.textContent = `Error: ${err.message || 'Camera permission required'}`;
-        this.statusBadge.className = 'status-badge status-error';
-      }
+      this.setStatus(`Error: ${err.message || 'Camera permission required'}`, 'error');
     }
   }
 }

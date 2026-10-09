@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign Language to Text & Voice</title>
-  <meta name="description" content="Real-time American Sign Language recognition to text and speech using webcam computer vision.">
+  <title>Sign Language Interpreter · Real-Time ASL to Text & Voice</title>
+  <meta name="description" content="Real-time American Sign Language recognition into live captions and spoken voice using computer vision.">
 
   <!-- Clean Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,148 +16,113 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
-  <!-- Main Clean Styling -->
+  <!-- Clean Monochromatic Styling -->
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="clean-theme">
-  <!-- Main Application Shell -->
-  <div class="app-container">
-    <!-- Header -->
+<body class="neutral-theme">
+  <div class="app-layout">
+    <!-- Clean Minimalist Header -->
     <header class="app-header">
-      <div class="brand">
-        <div class="brand-icon">🤟</div>
-        <div class="brand-text">
-          <h1 class="brand-title">Sign Language to Speech</h1>
-          <p class="brand-subtitle">Real-time ASL translation into text & voice</p>
+      <div class="header-left">
+        <h1 class="brand-title">Sign Language Interpreter</h1>
+        <div id="systemStatusBadge" class="status-indicator">
+          <span class="status-dot"></span>
+          <span class="status-label">Initializing camera...</span>
         </div>
       </div>
 
       <div class="header-right">
-        <div id="systemStatusBadge" class="status-badge status-loading">
-          Initializing Camera & Model...
-        </div>
         <button id="btnDictionary" class="btn btn-secondary">
-          ASL Reference Guide
+          ASL Reference
+        </button>
+        <button id="btnFullscreenHeader" class="btn btn-secondary" title="Toggle Fullscreen View">
+          ⛶ Fullscreen
         </button>
       </div>
     </header>
 
-    <!-- Main Content Layout -->
-    <main class="main-grid">
-      <!-- Left: Camera Viewport & Live Captions -->
-      <section class="vision-section">
-        <div class="viewport-card">
-          <div class="video-wrapper">
-            <video id="webcam" playsinline muted autoplay></video>
-            <canvas id="hudCanvas"></canvas>
+    <!-- Main Workspace -->
+    <main class="main-container">
+      <div id="viewportContainer" class="viewport-card">
+        <!-- Video Screen -->
+        <div class="video-wrapper">
+          <video id="webcam" playsinline muted autoplay></video>
+          <canvas id="hudCanvas"></canvas>
 
-            <!-- Video Off Screen Overlay -->
-            <div id="videoOffOverlay" class="video-off-overlay">
-              <span class="video-off-icon">📷</span>
-              <p class="video-off-title">Camera is turned off</p>
-              <p class="video-off-subtitle">Click "Turn Camera On" or use the button below to resume</p>
-              <button id="btnResumeVideo" class="btn btn-primary" style="margin-top: 0.75rem;">
-                Turn Camera On
-              </button>
-            </div>
+          <!-- Top-right Fullscreen Quick Button -->
+          <button id="btnOverlayFullscreen" class="overlay-fullscreen-btn" title="Toggle Fullscreen">
+            ⛶
+          </button>
 
-            <!-- Detected Gesture Indicator -->
-            <div id="lastDetectedBadge" class="floating-detected-badge">
-              Detecting...
-            </div>
+          <!-- Video Off Overlay -->
+          <div id="videoOffOverlay" class="video-off-overlay">
+            <p class="video-off-title">Camera is turned off</p>
+            <p class="video-off-subtitle">Click below to resume hand tracking</p>
+            <button id="btnResumeVideo" class="btn btn-primary" style="margin-top: 0.75rem;">
+              Turn Camera On
+            </button>
           </div>
 
-          <!-- Live Caption Bar -->
-          <div class="caption-container">
-            <div class="caption-header">
-              <span class="caption-label">LIVE CAPTIONS</span>
-              <span class="caption-tips">Hold sign steady to commit · Flat palm for Space · Swipe left for Backspace</span>
-            </div>
-            <div class="caption-box">
-              <p id="captionText" class="caption-text">
-                <span class="placeholder-caption">Show a hand gesture to begin...</span>
-              </p>
-              <span class="blinking-cursor"></span>
-            </div>
+          <!-- Detected Gesture Badge -->
+          <div id="lastDetectedBadge" class="detected-badge">
+            Detecting...
+          </div>
+        </div>
+
+        <!-- Live Closed Caption Subtitle Bar -->
+        <div class="caption-container">
+          <div class="caption-header">
+            <span class="caption-tag">LIVE CAPTIONS</span>
+            <span class="caption-instructions">Hold gesture to commit · Open flat palm for space · Swipe left to delete</span>
+          </div>
+          <div class="caption-box">
+            <p id="captionText" class="caption-text">
+              <span class="placeholder-caption">Show a hand gesture to the camera to begin...</span>
+            </p>
+            <span class="blinking-cursor"></span>
+          </div>
+        </div>
+
+        <!-- Clean Action Toolbar -->
+        <div class="action-bar">
+          <div class="action-left">
+            <button id="btnSpeak" class="btn btn-primary" title="Speak sentence aloud (Enter)">
+              🔊 Speak Sentence
+            </button>
+            <button id="btnBackspace" class="btn btn-secondary" title="Delete previous character (Backspace)">
+              ⌫ Backspace
+            </button>
+            <button id="btnClear" class="btn btn-secondary" title="Clear current caption text">
+              Clear
+            </button>
           </div>
 
-          <!-- Controls -->
-          <div class="action-bar">
-            <div class="action-left">
-              <button id="btnSpeak" class="btn btn-primary" title="Speak current sentence (Enter)">
-                🔊 Speak Sentence
-              </button>
-              <button id="btnBackspace" class="btn btn-secondary" title="Delete last character (Backspace)">
-                ⌫ Backspace
-              </button>
-              <button id="btnClear" class="btn btn-secondary" title="Clear caption">
-                Clear
-              </button>
-            </div>
+          <div class="action-right">
+            <button id="btnToggleVideo" class="btn btn-secondary" title="Turn webcam on or off">
+              📹 Camera On
+            </button>
+            <button id="btnMute" class="btn btn-secondary" title="Toggle voice audio output">
+              🔊 Voice On
+            </button>
+            <button id="btnFullscreen" class="btn btn-secondary" title="Expand to fullscreen">
+              ⛶ Fullscreen
+            </button>
+          </div>
+        </div>
+      </div>
 
-            <div class="action-right">
-              <button id="btnToggleVideo" class="btn btn-secondary" title="Turn webcam on or off">
-                📹 Video On
-              </button>
-              <button id="btnMute" class="btn btn-secondary" title="Toggle audio speech">
-                🔊 Voice On
-              </button>
-            </div>
+      <!-- Clean Spoken Conversation History -->
+      <section class="transcript-section">
+        <div class="transcript-header">
+          <h2 class="transcript-title">Spoken Transcript History</h2>
+          <button id="btnClearHistory" class="btn-link">Clear History</button>
+        </div>
+        <div id="historyList" class="history-list">
+          <div class="empty-state">
+            Spoken sentences will be recorded here for reference.
           </div>
         </div>
       </section>
-
-      <!-- Right: Settings, Conversation History & Signs -->
-      <aside class="sidebar-section">
-        <!-- Settings -->
-        <div class="card settings-card">
-          <h3 class="card-title">Settings</h3>
-          
-          <div class="setting-item">
-            <label for="voiceSelect">Speech Voice</label>
-            <select id="voiceSelect" class="form-select">
-              <option value="">Default System Voice</option>
-            </select>
-          </div>
-
-          <div class="setting-item-inline">
-            <div>
-              <span class="label-text">Auto-speak recognized phrases</span>
-              <span class="label-sub">Speaks 'Hello', 'Thank You', etc. automatically</span>
-            </div>
-            <input type="checkbox" id="toggleAutoSpeak" class="toggle-checkbox" checked>
-          </div>
-        </div>
-
-        <!-- Spoken Conversation History -->
-        <div class="card history-card">
-          <div class="card-header">
-            <h3 class="card-title">Transcript History</h3>
-          </div>
-          <div id="historyList" class="history-list">
-            <div class="empty-state">
-              Spoken sentences will be saved here.
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Reference -->
-        <div class="card cheatsheet-card">
-          <h3 class="card-title">Supported Gestures</h3>
-          <div class="quick-pill-grid">
-            <span class="pill">👋 Wave → Hello</span>
-            <span class="pill">🙏 Chin-to-Front → Thank You</span>
-            <span class="pill">🤟 ILY → I Love You</span>
-            <span class="pill">✊ Nod Fist → Yes</span>
-            <span class="pill">👍 Thumb Up → Good</span>
-            <span class="pill">👌 Pinch → OK</span>
-            <span class="pill">✌️ Peace → V</span>
-            <span class="pill">🤙 Shaka → Y</span>
-            <span class="pill">␣ Flat Palm → Space</span>
-            <span class="pill">⌫ Swipe Left → Backspace</span>
-          </div>
-        </div>
-      </aside>
     </main>
   </div>
 
@@ -167,7 +132,7 @@
       <div class="modal-header">
         <div>
           <h2 class="modal-title">ASL Gesture Reference</h2>
-          <p class="modal-subtitle">Pre-trained signs and fingerspelling alphabets recognized by the engine</p>
+          <p class="modal-subtitle">Supported signs, fingerspelling alphabets, and practical controls</p>
         </div>
         <button id="btnCloseDictionary" class="modal-close-btn">&times;</button>
       </div>

@@ -1,5 +1,6 @@
 /**
  * ui_controller.js - Clean Canvas HUD Rendering and Video Overlays
+ * Monochromatic, high-contrast, professional visuals without neon or artificial blue tones.
  */
 
 export class UIController {
@@ -81,7 +82,7 @@ export class UIController {
   }
 
   /**
-   * Clean solid line hand skeleton connections
+   * Crisp white skeleton line connections
    */
   drawHandSkeleton(landmarks, w, h) {
     const ctx = this.ctx;
@@ -96,10 +97,10 @@ export class UIController {
     ];
 
     ctx.save();
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#38bdf8';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
 
     for (const [i, j] of connections) {
       const p1 = landmarks[i];
@@ -128,9 +129,9 @@ export class UIController {
 
       ctx.beginPath();
       const isTip = [4, 8, 12, 16, 20].includes(i);
-      ctx.fillStyle = isTip ? '#22c55e' : '#60a5fa';
+      ctx.fillStyle = isTip ? '#22c55e' : '#ffffff';
 
-      ctx.arc(x, y, isTip ? 4 : 3, 0, Math.PI * 2);
+      ctx.arc(x, y, isTip ? 3.5 : 2.5, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -160,10 +161,10 @@ export class UIController {
     ctx.save();
 
     // Corner brackets
-    ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : '#38bdf8';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : 'rgba(255, 255, 255, 0.7)';
+    ctx.lineWidth = 1.75;
 
-    const cornerLen = Math.min(20, bw * 0.25);
+    const cornerLen = Math.min(18, bw * 0.25);
 
     // Top-left
     ctx.beginPath();
@@ -195,23 +196,23 @@ export class UIController {
 
     // Floating Badge above hand
     if (this.currentGesture) {
-      const badgeY = Math.max(35, by - 14);
+      const badgeY = Math.max(32, by - 14);
       const badgeX = bx + bw / 2;
 
       const labelText = this.currentGesture.text;
       const confText = `${Math.round(this.currentGesture.confidence * 100)}%`;
 
-      ctx.font = '600 14px Inter, sans-serif';
+      ctx.font = '600 13px Inter, sans-serif';
       const textWidth = ctx.measureText(`${labelText} · ${confText}`).width;
-      const badgeW = textWidth + 34;
-      const badgeH = 28;
+      const badgeW = textWidth + 30;
+      const badgeH = 26;
 
       const rx = badgeX - badgeW / 2;
       const ry = badgeY - badgeH / 2;
 
-      // Solid background
-      ctx.fillStyle = '#0f172a';
-      ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : '#334155';
+      // Solid neutral background
+      ctx.fillStyle = '#09090b';
+      ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : '#3f3f46';
       ctx.lineWidth = 1;
 
       ctx.beginPath();
@@ -220,29 +221,29 @@ export class UIController {
       ctx.stroke();
 
       // Circular hold indicator
-      const circleX = rx + 14;
+      const circleX = rx + 12;
       const circleY = ry + badgeH / 2;
       ctx.beginPath();
-      ctx.arc(circleX, circleY, 5, 0, Math.PI * 2);
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 2;
+      ctx.arc(circleX, circleY, 4, 0, Math.PI * 2);
+      ctx.strokeStyle = '#3f3f46';
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       if (this.holdProgress > 0) {
         ctx.beginPath();
-        ctx.arc(circleX, circleY, 5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * this.holdProgress);
-        ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : '#38bdf8';
-        ctx.lineWidth = 2;
+        ctx.arc(circleX, circleY, 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * this.holdProgress);
+        ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : '#ffffff';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       }
 
       // Badge text
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(labelText, rx + 26, ry + 19);
+      ctx.fillText(labelText, rx + 22, ry + 17);
 
-      ctx.fillStyle = '#94a3b8';
+      ctx.fillStyle = '#a1a1aa';
       ctx.font = '11px JetBrains Mono, monospace';
-      ctx.fillText(confText, rx + 26 + ctx.measureText(labelText).width + 6, ry + 19);
+      ctx.fillText(confText, rx + 22 + ctx.measureText(labelText).width + 6, ry + 17);
     }
 
     ctx.restore();
@@ -257,11 +258,11 @@ export class UIController {
 
     const pillX = 14;
     const pillY = 14;
-    const pillW = 160;
-    const pillH = 28;
+    const pillW = 145;
+    const pillH = 26;
 
-    ctx.fillStyle = '#0f172a';
-    ctx.strokeStyle = '#334155';
+    ctx.fillStyle = 'rgba(9, 9, 11, 0.85)';
+    ctx.strokeStyle = '#27272a';
     ctx.lineWidth = 1;
 
     ctx.beginPath();
@@ -271,16 +272,16 @@ export class UIController {
 
     // Status Dot
     ctx.beginPath();
-    ctx.arc(pillX + 12, pillY + pillH / 2, 4, 0, Math.PI * 2);
+    ctx.arc(pillX + 10, pillY + pillH / 2, 3.5, 0, Math.PI * 2);
     ctx.fillStyle = '#22c55e';
     ctx.fill();
 
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = '#fafafa';
     ctx.font = '600 11px JetBrains Mono, monospace';
-    ctx.fillText(`${this.fps} FPS`, pillX + 26, pillY + 18);
+    ctx.fillText(`${this.fps} FPS`, pillX + 22, pillY + 17);
 
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText(`${this.inferenceTimeMs}ms`, pillX + 90, pillY + 18);
+    ctx.fillStyle = '#a1a1aa';
+    ctx.fillText(`${this.inferenceTimeMs}ms`, pillX + 85, pillY + 17);
 
     ctx.restore();
   }
@@ -294,7 +295,7 @@ export class UIController {
 
     this.drawMetricsHUD(w, h);
 
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = '#71717a';
     ctx.font = '500 14px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('Raise hand to camera to begin signing', w / 2, h / 2);
