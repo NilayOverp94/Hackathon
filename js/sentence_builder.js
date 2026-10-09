@@ -122,36 +122,25 @@ export class SentenceBuilder {
     } else if (token === 'CLEAR') {
       this.clear();
     } else if (gesture.category === 'conversational') {
-      // If user is actively typing a word with fingerspelling and signs OK/F, treat as letter 'F'
-      if (token === 'OK' && this.currentWord.length > 0) {
-        this.currentWord += 'F';
-        this.fullSentence += 'F';
-        this.updatePredictions();
-      } else if (token === 'PLEASE' && this.currentWord.length > 0) {
-        this.currentWord += 'Y';
-        this.fullSentence += 'Y';
-        this.updatePredictions();
-      } else {
-        // Conversational phrases are committed as full words
-        if (this.currentWord.length > 0) {
-          this.fullSentence = this.fullSentence.slice(0, -this.currentWord.length);
-          this.currentWord = '';
-        }
-
-        if (this.fullSentence.length > 0 && !this.fullSentence.endsWith(' ')) {
-          this.fullSentence += ' ';
-        }
-        this.fullSentence += token;
+      // Conversational phrases are committed as full words
+      if (this.currentWord.length > 0) {
+        this.fullSentence = this.fullSentence.slice(0, -this.currentWord.length);
         this.currentWord = '';
-
-        // Suppress accidental letters for 400ms while user moves hand away
-        this.suppressLettersUntil = now + 400;
-        this.updatePredictions();
       }
-    } else {
-      // Alphabet fingerspelling
-      this.currentWord += token;
+
+      if (this.fullSentence.length > 0 && !this.fullSentence.endsWith(' ')) {
+        this.fullSentence += ' ';
+      }
       this.fullSentence += token;
+      this.currentWord = '';
+      this.updatePredictions();
+    } else {
+      // Direct words/controls
+      if (this.fullSentence.length > 0 && !this.fullSentence.endsWith(' ')) {
+        this.fullSentence += ' ';
+      }
+      this.fullSentence += token;
+      this.currentWord = '';
       this.updatePredictions();
     }
 
@@ -276,20 +265,9 @@ export class SentenceBuilder {
       'NO': 'No, thank you.',
       'GOOD': 'Good.',
       'BAD': 'Bad.',
-      'MORE': 'I would like more.',
       'STOP': 'Please stop.',
-      'WHERE': 'Where is it?',
       'WATER': 'Can I have some water?',
-      'EAT': 'I would like food.',
-      'DRINK': 'I would like a drink.',
-      'TIME': 'What time is it?',
       'SORRY': 'I am sorry.',
-      'FINE': 'I am doing fine.',
-      'YOU': 'You.',
-      'ME': 'Me.',
-      'LOOK': 'Look at that.',
-      'WORK': 'Time to work.',
-      'PLAY': 'Let us play!',
       'EXCELLENT': 'Excellent!'
     };
 

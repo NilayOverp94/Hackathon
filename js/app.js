@@ -23,7 +23,6 @@ class SignApp {
     // Controls
     this.btnSpeak = document.getElementById('btnSpeak');
     this.btnClear = document.getElementById('btnClear');
-    this.btnModeToggle = document.getElementById('btnModeToggle');
     this.btnBackspace = document.getElementById('btnBackspace');
     this.btnMute = document.getElementById('btnMute');
     this.btnToggleVideo = document.getElementById('btnToggleVideo');
@@ -128,15 +127,6 @@ class SignApp {
     this.btnClear?.addEventListener('click', () => {
       this.sentenceBuilder.clear();
       this.updateCaptionUI('');
-    });
-
-    // Words Mode vs Letters Mode Toggle
-    this.btnModeToggle?.addEventListener('click', () => {
-      this.gestureEngine.wordsOnly = !this.gestureEngine.wordsOnly;
-      this.btnModeToggle.textContent = this.gestureEngine.wordsOnly ? '💬 Words Mode' : '🔤 Letter Mode';
-      this.btnModeToggle.title = this.gestureEngine.wordsOnly
-        ? 'Words Mode: Only proper conversational words are detected (no single letters)'
-        : 'Letter Mode: Spelling individual letters A-Z';
     });
 
     // Backspace Button
