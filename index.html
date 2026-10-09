@@ -49,7 +49,20 @@
           <video id="webcam" playsinline muted autoplay></video>
           <canvas id="hudCanvas"></canvas>
 
-          <!-- Top-right Fullscreen Quick Button -->
+          <!-- Top-Left Performance Metrics HUD -->
+          <div id="statsBadge" class="stats-badge">
+            <span class="stats-dot"></span>
+            <span id="fpsText">30 FPS</span>
+            <span class="stats-sep">·</span>
+            <span id="latencyText">12ms</span>
+          </div>
+
+          <!-- Top-Center Detected Gesture Badge -->
+          <div id="lastDetectedBadge" class="detected-badge">
+            Detecting...
+          </div>
+
+          <!-- Top-Right Fullscreen Quick Button -->
           <button id="btnOverlayFullscreen" class="overlay-fullscreen-btn" title="Toggle Fullscreen">
             ⛶
           </button>
@@ -61,11 +74,6 @@
             <button id="btnResumeVideo" class="btn btn-primary" style="margin-top: 0.75rem;">
               Turn Camera On
             </button>
-          </div>
-
-          <!-- Detected Gesture Badge -->
-          <div id="lastDetectedBadge" class="detected-badge">
-            Detecting...
           </div>
         </div>
 

@@ -31,6 +31,8 @@ export class SentenceBuilder {
         this.currentCandidate = null;
         if (this.onHoldProgress) this.onHoldProgress(0, null);
       }
+      // Hand lowered/cleared: reset last committed token
+      this.lastCommittedToken = null;
       return;
     }
 
@@ -44,13 +46,11 @@ export class SentenceBuilder {
       }
 
       if (elapsed >= this.holdThresholdMs) {
-        // Prevent immediate duplicate re-commit unless user released or 1.2s passed for repeating letters
-        const timeSinceLastCommit = now - this.lastCommitTime;
-        if (this.lastCommittedToken !== gesture.text || timeSinceLastCommit > 1300) {
+        // Only commit if this gesture has not already been committed in this hold
+        if (this.lastCommittedToken !== gesture.text) {
           this.commitToken(gesture);
           this.lastCommittedToken = gesture.text;
           this.lastCommitTime = now;
-          this.candidateStartTime = now; // reset timer for repeated hold
         }
       }
     } else {

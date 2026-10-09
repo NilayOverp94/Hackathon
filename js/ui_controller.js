@@ -1,23 +1,27 @@
 /**
  * ui_controller.js - Clean Canvas HUD Rendering and Video Overlays
- * Monochromatic, high-contrast, professional visuals without neon or artificial blue tones.
+ * Strictly draws clean hand skeleton lines and tracking brackets.
+ * No mirrored canvas text and no center screen prompts.
  */
 
 export class UIController {
-  constructor({ canvasElement, videoElement }) {
+  constructor({ canvasElement, videoElement, onMetricsUpdate = null }) {
     this.canvas = canvasElement;
     this.ctx = canvasElement.getContext('2d');
     this.video = videoElement;
+    this.onMetricsUpdate = onMetricsUpdate;
 
-    // HUD Display states
+    // State
     this.currentGesture = null;
     this.holdProgress = 0;
-    this.fps = 0;
-    this.frameCount = 0;
-    this.lastFpsUpdate = performance.now();
-    this.inferenceTimeMs = 0;
 
-    // Drawing options
+    // Performance tracking
+    this.frameCount = 0;
+    this.lastFpsTime = performance.now();
+    this.fps = 30;
+    this.inferenceTimeMs = 12;
+
+    // Options
     this.showSkeleton = true;
     this.showBoundingBox = true;
     this.showLandmarkDots = true;
@@ -32,10 +36,16 @@ export class UIController {
     this.inferenceTimeMs = Math.round(inferenceTimeMs);
     this.frameCount++;
     const now = performance.now();
-    if (now - this.lastFpsUpdate >= 1000) {
-      this.fps = Math.round((this.frameCount * 1000) / (now - this.lastFpsUpdate));
+    const elapsed = now - this.lastFpsTime;
+
+    if (elapsed >= 500) {
+      this.fps = Math.round((this.frameCount * 1000) / elapsed);
       this.frameCount = 0;
-      this.lastFpsUpdate = now;
+      this.lastFpsTime = now;
+
+      if (this.onMetricsUpdate) {
+        this.onMetricsUpdate(this.fps, this.inferenceTimeMs);
+      }
     }
   }
 
@@ -46,20 +56,17 @@ export class UIController {
     const { width, height } = this.canvas;
     const ctx = this.ctx;
 
-    // Clear overlay canvas
+    // Clear canvas
     ctx.clearRect(0, 0, width, height);
 
     if (!results || !results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-      this.drawScanningOverlay(width, height);
+      // Nothing drawn when no hand is present (no middle screen text)
       return;
     }
 
     // Process each detected hand
     for (let h = 0; h < results.multiHandLandmarks.length; h++) {
       const landmarks = results.multiHandLandmarks[h];
-      const handedness = results.multiHandedness && results.multiHandedness[h]
-        ? results.multiHandedness[h].label
-        : 'Right';
 
       // Draw clean skeleton lines
       if (this.showSkeleton) {
@@ -71,14 +78,11 @@ export class UIController {
         this.drawLandmarkDots(landmarks, width, height);
       }
 
-      // Draw bounding box and sign badge
+      // Draw tracking brackets around hand
       if (this.showBoundingBox) {
-        this.drawHandHUD(landmarks, handedness, width, height);
+        this.drawHandHUD(landmarks, width, height);
       }
     }
-
-    // Draw Performance Metrics in top-left
-    this.drawMetricsHUD(width, height);
   }
 
   /**
@@ -139,9 +143,9 @@ export class UIController {
   }
 
   /**
-   * Clean bounding box and sign badge
+   * Clean bounding box corner brackets around hand
    */
-  drawHandHUD(landmarks, handedness, w, h) {
+  drawHandHUD(landmarks, w, h) {
     const ctx = this.ctx;
 
     let minX = 1, minY = 1, maxX = 0, maxY = 0;
@@ -161,7 +165,7 @@ export class UIController {
     ctx.save();
 
     // Corner brackets
-    ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : 'rgba(255, 255, 255, 0.7)';
+    ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : 'rgba(255, 255, 255, 0.6)';
     ctx.lineWidth = 1.75;
 
     const cornerLen = Math.min(18, bw * 0.25);
@@ -193,112 +197,6 @@ export class UIController {
     ctx.lineTo(bx + bw, by + bh);
     ctx.lineTo(bx + bw, by + bh - cornerLen);
     ctx.stroke();
-
-    // Floating Badge above hand
-    if (this.currentGesture) {
-      const badgeY = Math.max(32, by - 14);
-      const badgeX = bx + bw / 2;
-
-      const labelText = this.currentGesture.text;
-      const confText = `${Math.round(this.currentGesture.confidence * 100)}%`;
-
-      ctx.font = '600 13px Inter, sans-serif';
-      const textWidth = ctx.measureText(`${labelText} · ${confText}`).width;
-      const badgeW = textWidth + 30;
-      const badgeH = 26;
-
-      const rx = badgeX - badgeW / 2;
-      const ry = badgeY - badgeH / 2;
-
-      // Solid neutral background
-      ctx.fillStyle = '#09090b';
-      ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : '#3f3f46';
-      ctx.lineWidth = 1;
-
-      ctx.beginPath();
-      ctx.rect(rx, ry, badgeW, badgeH);
-      ctx.fill();
-      ctx.stroke();
-
-      // Circular hold indicator
-      const circleX = rx + 12;
-      const circleY = ry + badgeH / 2;
-      ctx.beginPath();
-      ctx.arc(circleX, circleY, 4, 0, Math.PI * 2);
-      ctx.strokeStyle = '#3f3f46';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      if (this.holdProgress > 0) {
-        ctx.beginPath();
-        ctx.arc(circleX, circleY, 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * this.holdProgress);
-        ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : '#ffffff';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
-
-      // Badge text
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(labelText, rx + 22, ry + 17);
-
-      ctx.fillStyle = '#a1a1aa';
-      ctx.font = '11px JetBrains Mono, monospace';
-      ctx.fillText(confText, rx + 22 + ctx.measureText(labelText).width + 6, ry + 17);
-    }
-
-    ctx.restore();
-  }
-
-  /**
-   * Top-left real-time performance indicator
-   */
-  drawMetricsHUD(w, h) {
-    const ctx = this.ctx;
-    ctx.save();
-
-    const pillX = 14;
-    const pillY = 14;
-    const pillW = 145;
-    const pillH = 26;
-
-    ctx.fillStyle = 'rgba(9, 9, 11, 0.85)';
-    ctx.strokeStyle = '#27272a';
-    ctx.lineWidth = 1;
-
-    ctx.beginPath();
-    ctx.rect(pillX, pillY, pillW, pillH);
-    ctx.fill();
-    ctx.stroke();
-
-    // Status Dot
-    ctx.beginPath();
-    ctx.arc(pillX + 10, pillY + pillH / 2, 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = '#22c55e';
-    ctx.fill();
-
-    ctx.fillStyle = '#fafafa';
-    ctx.font = '600 11px JetBrains Mono, monospace';
-    ctx.fillText(`${this.fps} FPS`, pillX + 22, pillY + 17);
-
-    ctx.fillStyle = '#a1a1aa';
-    ctx.fillText(`${this.inferenceTimeMs}ms`, pillX + 85, pillY + 17);
-
-    ctx.restore();
-  }
-
-  /**
-   * Idle prompt when no hand is present
-   */
-  drawScanningOverlay(w, h) {
-    const ctx = this.ctx;
-    ctx.save();
-
-    this.drawMetricsHUD(w, h);
-
-    ctx.fillStyle = '#71717a';
-    ctx.font = '500 14px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Raise hand to camera to begin signing', w / 2, h / 2);
 
     ctx.restore();
   }

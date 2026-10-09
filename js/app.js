@@ -32,6 +32,8 @@ class SignApp {
     this.btnFullscreenHeader = document.getElementById('btnFullscreenHeader');
     this.btnOverlayFullscreen = document.getElementById('btnOverlayFullscreen');
     this.btnClearHistory = document.getElementById('btnClearHistory');
+    this.fpsText = document.getElementById('fpsText');
+    this.latencyText = document.getElementById('latencyText');
 
     // Modals
     this.dictionaryModal = document.getElementById('dictionaryModal');
@@ -64,7 +66,7 @@ class SignApp {
       onHoldProgress: (progress, gesture) => {
         this.ui.setHoldProgress(progress, gesture);
         if (gesture) {
-          this.lastDetectedBadge.textContent = `${gesture.text} (${Math.round(gesture.confidence * 100)}%)`;
+          this.lastDetectedBadge.textContent = `${gesture.text} · ${Math.round(gesture.confidence * 100)}%`;
           this.lastDetectedBadge.classList.add('visible');
         } else {
           this.lastDetectedBadge.classList.remove('visible');
@@ -84,7 +86,11 @@ class SignApp {
     // 4. UI & Canvas HUD Controller
     this.ui = new UIController({
       canvasElement: this.canvasElement,
-      videoElement: this.videoElement
+      videoElement: this.videoElement,
+      onMetricsUpdate: (fps, latencyMs) => {
+        if (this.fpsText) this.fpsText.textContent = `${fps} FPS`;
+        if (this.latencyText) this.latencyText.textContent = `${latencyMs}ms`;
+      }
     });
   }
 
@@ -126,21 +132,27 @@ class SignApp {
     this.btnFullscreenHeader?.addEventListener('click', () => this.toggleFullscreen());
     this.btnOverlayFullscreen?.addEventListener('click', () => this.toggleFullscreen());
 
-    document.addEventListener('fullscreenchange', () => {
-      const isFs = !!document.fullscreenElement;
+    const onFullscreenChange = () => {
+      const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      if (this.viewportContainer) {
+        this.viewportContainer.classList.toggle('is-fullscreen', isFs);
+      }
       const fsLabel = isFs ? '✕ Exit Fullscreen' : '⛶ Fullscreen';
       if (this.btnFullscreen) this.btnFullscreen.textContent = fsLabel;
       if (this.btnFullscreenHeader) this.btnFullscreenHeader.textContent = fsLabel;
       if (this.btnOverlayFullscreen) this.btnOverlayFullscreen.textContent = isFs ? '✕' : '⛶';
 
-      // Resize canvas to match new dimensions
+      // Resize canvas to match video dimensions
       setTimeout(() => {
         const vw = this.videoElement.videoWidth || 640;
         const vh = this.videoElement.videoHeight || 480;
         this.canvasElement.width = vw;
         this.canvasElement.height = vh;
       }, 100);
-    });
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 
     // Mute/Unmute Toggle
     this.btnMute?.addEventListener('click', () => {
@@ -183,17 +195,19 @@ class SignApp {
   }
 
   toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      if (this.viewportContainer.requestFullscreen) {
-        this.viewportContainer.requestFullscreen().catch(err => {
-          console.warn('Fullscreen request failed:', err);
-        });
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if (!isFs) {
+      const el = this.viewportContainer;
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(err => console.warn('Fullscreen failed:', err));
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();
       }
     } else {
       if (document.exitFullscreen) {
-        document.exitFullscreen().catch(err => {
-          console.warn('Exit fullscreen failed:', err);
-        });
+        document.exitFullscreen().catch(err => console.warn('Exit fullscreen failed:', err));
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
       }
     }
   }
