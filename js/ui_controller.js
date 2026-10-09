@@ -1,13 +1,12 @@
 /**
- * ui_controller.js - HUD Canvas Rendering, Video Overlays & Interactive UI
+ * ui_controller.js - Clean Canvas HUD Rendering and Video Overlays
  */
 
 export class UIController {
-  constructor({ canvasElement, videoElement, onSignPracticed = null }) {
+  constructor({ canvasElement, videoElement }) {
     this.canvas = canvasElement;
     this.ctx = canvasElement.getContext('2d');
     this.video = videoElement;
-    this.onSignPracticed = onSignPracticed;
 
     // HUD Display states
     this.currentGesture = null;
@@ -16,11 +15,6 @@ export class UIController {
     this.frameCount = 0;
     this.lastFpsUpdate = performance.now();
     this.inferenceTimeMs = 0;
-
-    // Practice Mode State
-    this.practiceMode = false;
-    this.targetPracticeSign = null;
-    this.practiceStreak = 0;
 
     // Drawing options
     this.showSkeleton = true;
@@ -45,7 +39,7 @@ export class UIController {
   }
 
   /**
-   * Render HUD elements over camera feed
+   * Render clean HUD elements over camera feed
    */
   renderFrame(results) {
     const { width, height } = this.canvas;
@@ -55,7 +49,6 @@ export class UIController {
     ctx.clearRect(0, 0, width, height);
 
     if (!results || !results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-      // Draw idle scanning reticle
       this.drawScanningOverlay(width, height);
       return;
     }
@@ -67,17 +60,17 @@ export class UIController {
         ? results.multiHandedness[h].label
         : 'Right';
 
-      // Draw skeleton connections
+      // Draw clean skeleton lines
       if (this.showSkeleton) {
         this.drawHandSkeleton(landmarks, width, height);
       }
 
-      // Draw landmark dots
+      // Draw clean landmark dots
       if (this.showLandmarkDots) {
         this.drawLandmarkDots(landmarks, width, height);
       }
 
-      // Draw bounding box and floating sign badge
+      // Draw bounding box and sign badge
       if (this.showBoundingBox) {
         this.drawHandHUD(landmarks, handedness, width, height);
       }
@@ -88,7 +81,7 @@ export class UIController {
   }
 
   /**
-   * Futuristic cyber hand skeleton connections
+   * Clean solid line hand skeleton connections
    */
   drawHandSkeleton(landmarks, w, h) {
     const ctx = this.ctx;
@@ -103,14 +96,10 @@ export class UIController {
     ];
 
     ctx.save();
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-
-    // Glowing cyan line
-    ctx.strokeStyle = '#00f2fe';
-    ctx.shadowColor = '#00f2fe';
-    ctx.shadowBlur = 10;
+    ctx.strokeStyle = '#38bdf8';
 
     for (const [i, j] of connections) {
       const p1 = landmarks[i];
@@ -126,7 +115,7 @@ export class UIController {
   }
 
   /**
-   * Landmark joint dots with neon glow
+   * Clean landmark joint dots
    */
   drawLandmarkDots(landmarks, w, h) {
     const ctx = this.ctx;
@@ -138,13 +127,10 @@ export class UIController {
       const y = p.y * h;
 
       ctx.beginPath();
-      // Fingertips have distinctive emerald pulse, other joints are violet/cyan
       const isTip = [4, 8, 12, 16, 20].includes(i);
-      ctx.fillStyle = isTip ? '#10b981' : '#a855f7';
-      ctx.shadowColor = isTip ? '#10b981' : '#a855f7';
-      ctx.shadowBlur = isTip ? 12 : 6;
+      ctx.fillStyle = isTip ? '#22c55e' : '#60a5fa';
 
-      ctx.arc(x, y, isTip ? 5 : 3.5, 0, Math.PI * 2);
+      ctx.arc(x, y, isTip ? 4 : 3, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -152,7 +138,7 @@ export class UIController {
   }
 
   /**
-   * Bounding box, targeting brackets, and floating HUD label
+   * Clean bounding box and sign badge
    */
   drawHandHUD(landmarks, handedness, w, h) {
     const ctx = this.ctx;
@@ -165,7 +151,6 @@ export class UIController {
       if (p.y > maxY) maxY = p.y;
     }
 
-    // Add padding
     const pad = 0.04;
     const bx = Math.max(0, (minX - pad) * w);
     const by = Math.max(0, (minY - pad) * h);
@@ -174,13 +159,11 @@ export class UIController {
 
     ctx.save();
 
-    // Corner brackets styling
-    ctx.strokeStyle = this.holdProgress >= 0.95 ? '#10b981' : '#38bdf8';
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = ctx.strokeStyle;
-    ctx.shadowBlur = 8;
+    // Corner brackets
+    ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : '#38bdf8';
+    ctx.lineWidth = 2;
 
-    const cornerLen = Math.min(24, bw * 0.25);
+    const cornerLen = Math.min(20, bw * 0.25);
 
     // Top-left
     ctx.beginPath();
@@ -212,110 +195,98 @@ export class UIController {
 
     // Floating Badge above hand
     if (this.currentGesture) {
-      const badgeY = Math.max(40, by - 16);
+      const badgeY = Math.max(35, by - 14);
       const badgeX = bx + bw / 2;
 
       const labelText = this.currentGesture.text;
       const confText = `${Math.round(this.currentGesture.confidence * 100)}%`;
 
-      ctx.font = 'bold 15px Outfit, Inter, sans-serif';
+      ctx.font = '600 14px Inter, sans-serif';
       const textWidth = ctx.measureText(`${labelText} · ${confText}`).width;
-      const badgeW = textWidth + 36;
-      const badgeH = 32;
-
-      // Badge Background
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-      ctx.strokeStyle = this.holdProgress >= 0.95 ? '#10b981' : 'rgba(56, 189, 248, 0.6)';
-      ctx.lineWidth = 1.5;
+      const badgeW = textWidth + 34;
+      const badgeH = 28;
 
       const rx = badgeX - badgeW / 2;
       const ry = badgeY - badgeH / 2;
+
+      // Solid background
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : '#334155';
+      ctx.lineWidth = 1;
+
       ctx.beginPath();
-      ctx.roundRect(rx, ry, badgeW, badgeH, 16);
+      ctx.rect(rx, ry, badgeW, badgeH);
       ctx.fill();
       ctx.stroke();
 
-      // Circular hold-lock progress indicator
-      const circleX = rx + 16;
+      // Circular hold indicator
+      const circleX = rx + 14;
       const circleY = ry + badgeH / 2;
       ctx.beginPath();
-      ctx.arc(circleX, circleY, 7, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 2.5;
+      ctx.arc(circleX, circleY, 5, 0, Math.PI * 2);
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
       ctx.stroke();
 
       if (this.holdProgress > 0) {
         ctx.beginPath();
-        ctx.arc(circleX, circleY, 7, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * this.holdProgress);
-        ctx.strokeStyle = this.holdProgress >= 0.95 ? '#10b981' : '#00f2fe';
-        ctx.lineWidth = 2.5;
+        ctx.arc(circleX, circleY, 5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * this.holdProgress);
+        ctx.strokeStyle = this.holdProgress >= 0.95 ? '#22c55e' : '#38bdf8';
+        ctx.lineWidth = 2;
         ctx.stroke();
       }
 
       // Badge text
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(labelText, rx + 30, ry + 21);
+      ctx.fillText(labelText, rx + 26, ry + 19);
 
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = '12px JetBrains Mono, monospace';
-      ctx.fillText(confText, rx + 30 + ctx.measureText(labelText).width + 6, ry + 21);
-
-      // Check practice mode match
-      if (this.practiceMode && this.targetPracticeSign && labelText === this.targetPracticeSign && this.holdProgress >= 0.95) {
-        if (this.onSignPracticed) {
-          this.onSignPracticed(labelText);
-        }
-      }
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px JetBrains Mono, monospace';
+      ctx.fillText(confText, rx + 26 + ctx.measureText(labelText).width + 6, ry + 19);
     }
 
     ctx.restore();
   }
 
   /**
-   * Top-left real-time performance HUD
+   * Top-left real-time performance indicator
    */
   drawMetricsHUD(w, h) {
     const ctx = this.ctx;
     ctx.save();
 
-    const pillX = 18;
-    const pillY = 18;
-    const pillW = 200;
-    const pillH = 34;
+    const pillX = 14;
+    const pillY = 14;
+    const pillW = 160;
+    const pillH = 28;
 
-    ctx.fillStyle = 'rgba(10, 15, 30, 0.75)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.fillStyle = '#0f172a';
+    ctx.strokeStyle = '#334155';
     ctx.lineWidth = 1;
 
     ctx.beginPath();
-    ctx.roundRect(pillX, pillY, pillW, pillH, 8);
+    ctx.rect(pillX, pillY, pillW, pillH);
     ctx.fill();
     ctx.stroke();
 
-    // Live Indicator Dot
+    // Status Dot
     ctx.beginPath();
-    ctx.arc(pillX + 16, pillY + pillH / 2, 4.5, 0, Math.PI * 2);
-    ctx.fillStyle = '#10b981';
-    ctx.shadowColor = '#10b981';
-    ctx.shadowBlur = 8;
+    ctx.arc(pillX + 12, pillY + pillH / 2, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#22c55e';
     ctx.fill();
 
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '600 12px JetBrains Mono, monospace';
-    ctx.fillText('LIVE', pillX + 27, pillY + 21);
-
     ctx.fillStyle = '#e2e8f0';
-    ctx.fillText(`${this.fps} FPS`, pillX + 70, pillY + 21);
+    ctx.font = '600 11px JetBrains Mono, monospace';
+    ctx.fillText(`${this.fps} FPS`, pillX + 26, pillY + 18);
 
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillText(`${this.inferenceTimeMs}ms`, pillX + 135, pillY + 21);
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText(`${this.inferenceTimeMs}ms`, pillX + 90, pillY + 18);
 
     ctx.restore();
   }
 
   /**
-   * Idle scanning animation when no hand is present
+   * Idle prompt when no hand is present
    */
   drawScanningOverlay(w, h) {
     const ctx = this.ctx;
@@ -323,9 +294,8 @@ export class UIController {
 
     this.drawMetricsHUD(w, h);
 
-    // Subtle center prompt
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.font = '500 14px Outfit, Inter, sans-serif';
+    ctx.fillStyle = '#64748b';
+    ctx.font = '500 14px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('Raise hand to camera to begin signing', w / 2, h / 2);
 

@@ -3,220 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SignPulse AI · Real-Time Sign Language to Text & Voice</title>
-  <meta name="description" content="AI-powered real-time American Sign Language (ASL) recognition into live captions and spoken voice with sub-20ms latency.">
+  <title>Sign Language to Text & Voice</title>
+  <meta name="description" content="Real-time American Sign Language recognition to text and speech using webcam computer vision.">
 
-  <!-- Google Fonts: Inter, Outfit, JetBrains Mono -->
+  <!-- Clean Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- MediaPipe Official Standalone Web Bundles -->
+  <!-- MediaPipe Standalone Web Bundles -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
-  <!-- Main Styling -->
+  <!-- Main Clean Styling -->
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="dark-theme">
-  <!-- Glowing Background Ambient Spheres -->
-  <div class="ambient-glow glow-1"></div>
-  <div class="ambient-glow glow-2"></div>
-  <div class="ambient-glow glow-3"></div>
-
-  <!-- Main App Shell -->
+<body class="clean-theme">
+  <!-- Main Application Shell -->
   <div class="app-container">
-    <!-- Header / Navbar -->
+    <!-- Header -->
     <header class="app-header">
       <div class="brand">
-        <div class="brand-icon">
-          <span class="hand-symbol">🤟</span>
-          <span class="pulse-ring"></span>
-        </div>
+        <div class="brand-icon">🤟</div>
         <div class="brand-text">
-          <h1 class="brand-title">SignPulse <span class="gradient-text">AI</span></h1>
-          <p class="brand-subtitle">Real-Time ASL to Text & Voice Bridge</p>
+          <h1 class="brand-title">Sign Language to Speech</h1>
+          <p class="brand-subtitle">Real-time ASL translation into text & voice</p>
         </div>
       </div>
 
-      <!-- Center Status Badge -->
-      <div id="systemStatusBadge" class="status-badge status-loading">
-        Initializing Camera & AI Model...
-      </div>
-
-      <!-- Header Actions -->
-      <div class="header-actions">
-        <button id="btnTogglePractice" class="btn btn-secondary">
-          <span class="icon">🎯</span> Practice & Quiz Mode
-        </button>
+      <div class="header-right">
+        <div id="systemStatusBadge" class="status-badge status-loading">
+          Initializing Camera & Model...
+        </div>
         <button id="btnDictionary" class="btn btn-secondary">
-          <span class="icon">📖</span> ASL Dictionary
+          ASL Reference Guide
         </button>
       </div>
     </header>
 
-    <!-- Practice Mode Top Banner (Toggled on Practice) -->
-    <div id="practiceBanner" class="practice-banner">
-      <div class="practice-info">
-        <span class="practice-badge">PRACTICE CHALLENGE</span>
-        <span class="practice-instruction">Show this sign to the webcam:</span>
-        <span id="practiceTarget" class="practice-target">HELLO</span>
-      </div>
-      <div class="practice-meta">
-        <span id="practiceScore" class="practice-score">Score: 0</span>
-        <span class="practice-hint">Hold the sign steady for 0.4s to score!</span>
-      </div>
-    </div>
-
-    <!-- Main Content Grid -->
+    <!-- Main Content Layout -->
     <main class="main-grid">
-      <!-- Left / Center: Camera Viewport & Live Subtitles -->
+      <!-- Left: Camera Viewport & Live Captions -->
       <section class="vision-section">
-        <!-- Camera Viewport Card -->
         <div class="viewport-card">
           <div class="video-wrapper">
-            <!-- Hidden raw video element -->
             <video id="webcam" playsinline muted autoplay></video>
-            <!-- Overlay HUD Canvas for Skeleton & Landmarks -->
             <canvas id="hudCanvas"></canvas>
 
-            <!-- Floating Last Detected Indicator -->
+            <!-- Detected Gesture Indicator -->
             <div id="lastDetectedBadge" class="floating-detected-badge">
               Detecting...
             </div>
-
-            <!-- Visual Equalizer Waveform for Audio Output -->
-            <div id="audioWaveform" class="audio-waveform-container" title="Speaking audio output">
-              <span class="bar bar-1"></span>
-              <span class="bar bar-2"></span>
-              <span class="bar bar-3"></span>
-              <span class="bar bar-4"></span>
-              <span class="bar bar-5"></span>
-              <span class="waveform-label">VOICE ACTIVE</span>
-            </div>
           </div>
 
-          <!-- Live Karaoke Caption Bar -->
+          <!-- Live Caption Bar -->
           <div class="caption-container">
             <div class="caption-header">
-              <div class="caption-label">
-                <span class="indicator-dot"></span> LIVE CAPTION
-              </div>
-              <div class="caption-tips">
-                Hold gesture steady to lock in · Horizontal open palm for Space · Swipe left for Backspace
-              </div>
+              <span class="caption-label">LIVE CAPTIONS</span>
+              <span class="caption-tips">Hold sign steady to commit · Flat palm for Space · Swipe left for Backspace</span>
             </div>
             <div class="caption-box">
               <p id="captionText" class="caption-text">
-                <span class="placeholder-caption">Waiting for signs... Raise your hand to the camera to begin</span>
+                <span class="placeholder-caption">Show a hand gesture to begin...</span>
               </p>
               <span class="blinking-cursor"></span>
             </div>
           </div>
 
-          <!-- Real-Time Control Action Bar -->
+          <!-- Controls -->
           <div class="action-bar">
             <div class="action-left">
-              <button id="btnSpeak" class="btn btn-primary" title="Speak sentence using Text-to-Speech (Enter)">
-                <span class="icon">🔊</span> Speak Sentence
+              <button id="btnSpeak" class="btn btn-primary" title="Speak current sentence (Enter)">
+                🔊 Speak Sentence
               </button>
-              <button id="btnPolish" class="btn btn-accent" title="Polish disjointed tokens into fluent natural English">
-                <span class="icon">✨</span> Polish & Speak
+              <button id="btnBackspace" class="btn btn-secondary" title="Delete last character (Backspace)">
+                ⌫ Backspace
               </button>
-            </div>
-
-            <div class="action-center">
-              <button id="btnBackspace" class="btn btn-secondary" title="Delete last character (Backspace key)">
-                <span class="icon">⌫</span> Backspace
-              </button>
-              <button id="btnClear" class="btn btn-secondary" title="Clear current buffer">
-                <span class="icon">🗑️</span> Clear
+              <button id="btnClear" class="btn btn-secondary" title="Clear caption">
+                Clear
               </button>
             </div>
 
             <div class="action-right">
-              <button id="btnMute" class="btn btn-secondary" title="Toggle audio voice playback">
-                <span class="icon">🔊</span> Voice Active
+              <button id="btnMute" class="btn btn-secondary" title="Toggle audio speech">
+                🔊 Voice On
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Right Panel: Conversation Transcript & Settings -->
+      <!-- Right: Settings, Conversation History & Signs -->
       <aside class="sidebar-section">
-        <!-- Quick Settings Card -->
+        <!-- Settings -->
         <div class="card settings-card">
-          <h3 class="card-title"><span class="icon">⚙️</span> Voice & Controls</h3>
+          <h3 class="card-title">Settings</h3>
           
           <div class="setting-item">
-            <label for="voiceSelect">Speech Synthesis Voice</label>
+            <label for="voiceSelect">Speech Voice</label>
             <select id="voiceSelect" class="form-select">
               <option value="">Default System Voice</option>
             </select>
           </div>
 
           <div class="setting-item-inline">
-            <label for="toggleAutoSpeak">
-              <span class="label-text">Auto-Speak Conversational Phrases</span>
-              <span class="label-sub">Speaks 'Hello', 'Thank You', 'I Love You' instantly</span>
-            </label>
+            <div>
+              <span class="label-text">Auto-speak recognized phrases</span>
+              <span class="label-sub">Speaks 'Hello', 'Thank You', etc. automatically</span>
+            </div>
             <input type="checkbox" id="toggleAutoSpeak" class="toggle-checkbox" checked>
           </div>
         </div>
 
-        <!-- Conversation History / Transcript Card -->
+        <!-- Spoken Conversation History -->
         <div class="card history-card">
           <div class="card-header">
-            <h3 class="card-title"><span class="icon">💬</span> Spoken Conversation Log</h3>
+            <h3 class="card-title">Transcript History</h3>
           </div>
           <div id="historyList" class="history-list">
             <div class="empty-state">
-              No spoken phrases yet. Completed sentences will appear here for playback and review.
+              Spoken sentences will be saved here.
             </div>
           </div>
         </div>
 
-        <!-- Gesture Cheatsheet Card -->
+        <!-- Quick Reference -->
         <div class="card cheatsheet-card">
-          <h3 class="card-title"><span class="icon">⚡</span> Quick Gestures</h3>
+          <h3 class="card-title">Supported Gestures</h3>
           <div class="quick-pill-grid">
-            <span class="pill">👋 Wave $\to$ Hello</span>
-            <span class="pill">🙏 Chin-to-Front $\to$ Thank You</span>
-            <span class="pill">🤟 ILY $\to$ I Love You</span>
-            <span class="pill">✊ Nod Fist $\to$ Yes</span>
-            <span class="pill">👍 Thumb Up $\to$ Good</span>
-            <span class="pill">👌 Pinch $\to$ OK</span>
-            <span class="pill">✌️ Peace $\to$ V / Victory</span>
-            <span class="pill">🤙 Shaka $\to$ Y</span>
-            <span class="pill">␣ Flat Palm $\to$ Space</span>
-            <span class="pill">⌫ Swipe Left $\to$ Delete</span>
+            <span class="pill">👋 Wave → Hello</span>
+            <span class="pill">🙏 Chin-to-Front → Thank You</span>
+            <span class="pill">🤟 ILY → I Love You</span>
+            <span class="pill">✊ Nod Fist → Yes</span>
+            <span class="pill">👍 Thumb Up → Good</span>
+            <span class="pill">👌 Pinch → OK</span>
+            <span class="pill">✌️ Peace → V</span>
+            <span class="pill">🤙 Shaka → Y</span>
+            <span class="pill">␣ Flat Palm → Space</span>
+            <span class="pill">⌫ Swipe Left → Backspace</span>
           </div>
         </div>
       </aside>
     </main>
   </div>
 
-  <!-- Full ASL Visual Dictionary Modal -->
+  <!-- ASL Reference Guide Modal -->
   <div id="dictionaryModal" class="modal-backdrop">
     <div class="modal-dialog">
       <div class="modal-header">
-        <div class="modal-title-group">
-          <h2 class="modal-title">📖 ASL Gesture & Sign Reference Guide</h2>
-          <p class="modal-subtitle">Browse all pre-trained gestures and fingerspelling alphabets supported in real-time</p>
+        <div>
+          <h2 class="modal-title">ASL Gesture Reference</h2>
+          <p class="modal-subtitle">Pre-trained signs and fingerspelling alphabets recognized by the engine</p>
         </div>
         <button id="btnCloseDictionary" class="modal-close-btn">&times;</button>
       </div>
       <div class="modal-body">
         <div id="dictionaryGrid" class="dictionary-grid">
-          <!-- Populated dynamically by app.js -->
+          <!-- Populated by app.js -->
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Main ES Module Script -->
+  <!-- Core Script -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
