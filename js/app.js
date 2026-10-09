@@ -62,8 +62,8 @@ class SignApp {
 
     // 3. Sentence Builder with Gboard Word Predictions
     this.sentenceBuilder = new SentenceBuilder({
-      letterHoldMs: 650,
-      phraseHoldMs: 420,
+      letterHoldMs: 420,
+      phraseHoldMs: 350,
       onHoldProgress: (progress, gesture) => {
         this.ui.setHoldProgress(progress, gesture);
         if (gesture) {
@@ -235,7 +235,7 @@ class SignApp {
       if (typeof window.Camera !== 'undefined') {
         this.cameraInstance = new window.Camera(this.videoElement, {
           onFrame: async () => {
-            if (this.handsInstance && this.isVideoActive) {
+            if (this.handsInstance && this.isVideoActive && this.videoElement.readyState >= 2) {
               await this.handsInstance.send({ image: this.videoElement });
             }
           },
@@ -410,9 +410,28 @@ class SignApp {
       this.handsInstance.onResults((results) => {
         const t0 = performance.now();
 
-        const gesture = this.gestureEngine.classify(results);
-        this.sentenceBuilder.processDetection(gesture);
-        this.ui.renderFrame(results);
+        // 1. Ensure canvas internal resolution perfectly matches webcam video resolution
+        if (this.videoElement.videoWidth > 0 &&
+           (this.canvasElement.width !== this.videoElement.videoWidth ||
+            this.canvasElement.height !== this.videoElement.videoHeight)) {
+          this.canvasElement.width = this.videoElement.videoWidth;
+          this.canvasElement.height = this.videoElement.videoHeight;
+        }
+
+        // 2. Safe gesture classification
+        try {
+          const gesture = this.gestureEngine.classify(results);
+          this.sentenceBuilder.processDetection(gesture);
+        } catch (err) {
+          console.error('Error during gesture classification:', err);
+        }
+
+        // 3. Safe canvas skeleton and landmark rendering
+        try {
+          this.ui.renderFrame(results);
+        } catch (err) {
+          console.error('Error during canvas rendering:', err);
+        }
 
         const t1 = performance.now();
         this.ui.updateMetrics(t1 - t0);

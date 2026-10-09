@@ -133,13 +133,13 @@ export class GestureEngine {
     const dynamicSign = this.classifyDynamicSigns(primaryLandmarks, motion);
     if (dynamicSign) return dynamicSign;
 
-    // Strict motion filter: if hand is moving, do NOT classify static letters!
-    // Transient moving hands cause random false-positive letters.
-    if (motion.totalDisplacement > 0.04 || Math.abs(motion.vx) > 0.15 || Math.abs(motion.vy) > 0.15) {
+    // Only suppress static letters during rapid fast swipes (speed > 1.2)
+    const speed = Math.hypot(motion.vx, motion.vy);
+    if (speed > 1.2) {
       return null;
     }
 
-    // Static ASL signs & letters (only evaluated when hand is still and steady)
+    // Static ASL signs & letters
     return this.classifyStaticSigns(primaryLandmarks, handedness);
   }
 

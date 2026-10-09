@@ -7,8 +7,8 @@ import { WordPredictor } from './word_predictor.js';
 
 export class SentenceBuilder {
   constructor({
-    letterHoldMs = 650,
-    phraseHoldMs = 420,
+    letterHoldMs = 420,
+    phraseHoldMs = 350,
     onTokenCommitted = null,
     onHoldProgress = null,
     onPredictionsChanged = null
@@ -24,9 +24,10 @@ export class SentenceBuilder {
     // Holding state
     this.currentCandidate = null;
     this.candidateStartTime = 0;
+    this.lastSeenTime = 0;
     this.lastCommittedToken = null;
     this.lastCommitTime = 0;
-    this.suppressLettersUntil = 0; // Cooldown after full-word conversational gestures
+    this.suppressLettersUntil = 0;
 
     // Text state
     this.currentWord = '';
@@ -42,15 +43,16 @@ export class SentenceBuilder {
     const now = performance.now();
 
     if (!gesture) {
-      if (this.currentCandidate) {
+      // Allow a 160ms grace window for camera jitter / single dropped frame
+      if (this.currentCandidate && (now - this.lastSeenTime > 160)) {
         this.currentCandidate = null;
         if (this.onHoldProgress) this.onHoldProgress(0, null);
+        this.lastCommittedToken = null;
       }
-      this.lastCommittedToken = null;
       return;
     }
 
-    // Suppress random letters right after completing a conversational gesture (hand relax cooldown)
+    // Suppress random letters right after completing a conversational gesture
     if (gesture.category === 'alphabet' && now < this.suppressLettersUntil) {
       if (this.currentCandidate) {
         this.currentCandidate = null;
@@ -59,11 +61,12 @@ export class SentenceBuilder {
       return;
     }
 
-    // Dynamic threshold: Letters require deliberate 650ms hold, conversational signs take 420ms
+    // Required hold time
     const requiredHold = gesture.category === 'alphabet' ? this.letterHoldMs : this.phraseHoldMs;
 
     // If same gesture continues
     if (this.currentCandidate && this.currentCandidate.text === gesture.text) {
+      this.lastSeenTime = now;
       const elapsed = now - this.candidateStartTime;
       const progress = Math.min(1.0, elapsed / requiredHold);
 
@@ -82,8 +85,9 @@ export class SentenceBuilder {
       // New gesture candidate started
       this.currentCandidate = gesture;
       this.candidateStartTime = now;
+      this.lastSeenTime = now;
       if (this.onHoldProgress) {
-        this.onHoldProgress(0.05, gesture);
+        this.onHoldProgress(0.08, gesture);
       }
     }
   }
@@ -104,7 +108,6 @@ export class SentenceBuilder {
     } else if (gesture.category === 'conversational') {
       // Conversational phrases are committed as full words
       if (this.currentWord.length > 0) {
-        // Clear any unfinished partial letters before adding full phrase
         this.fullSentence = this.fullSentence.slice(0, -this.currentWord.length);
         this.currentWord = '';
       }
@@ -115,8 +118,8 @@ export class SentenceBuilder {
       this.fullSentence += token;
       this.currentWord = '';
 
-      // Suppress letter false-positives for 1.2s while user returns hand
-      this.suppressLettersUntil = now + 1200;
+      // Suppress accidental letters for 400ms while user moves hand away
+      this.suppressLettersUntil = now + 400;
       this.updatePredictions();
     } else {
       // Alphabet fingerspelling
