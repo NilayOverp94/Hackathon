@@ -2,12 +2,6 @@
 
 > **Accessibility-First Computer Vision System**: A real-time web application that translates American Sign Language (ASL) gestures into live captions and natural spoken voice using an ordinary webcam at 30–60 FPS with sub-20ms latency. Zero API keys, zero cloud transmission, 100% private and on-device.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Platform: Web](https://img.shields.io/badge/Platform-Web%20(Chrome%20%7C%20Safari%20%7C%20Edge)-orange.svg)]()
-[![MediaPipe: Hands](https://img.shields.io/badge/MediaPipe-Hands%20v0.4-green.svg)]()
-[![Zero API Keys](https://img.shields.io/badge/API%20Keys-Zero%20(100%25%20On--Device)-brightgreen.svg)]()
-[![Deployment: Vercel Ready](https://img.shields.io/badge/Deployment-Vercel%20Edge-black.svg)]()
-
 ---
 
 ##  Highlights & Key Innovations
