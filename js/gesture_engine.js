@@ -211,19 +211,41 @@ export class GestureEngine {
     }
 
     // BACKSPACE: Quick horizontal swipe left
-    if (motion.vx < -0.45 && motion.totalDisplacement > 0.18) {
+    if ((motion.vx < -0.32 && motion.totalDisplacement > 0.12) || motion.vx < -0.55) {
       return {
         text: 'BACKSPACE',
         category: 'control',
-        confidence: 0.90,
+        confidence: 0.92,
         description: 'Swipe hand left (Delete character)'
       };
     }
 
+    // Z: Index finger tracing a Z motion in the air
+    if (f.index.isExtended && f.middle.isCurled && f.ring.isCurled && f.pinky.isCurled) {
+      if (motion.oscillationsX >= 2 && motion.totalDisplacement > 0.12) {
+        return {
+          text: 'Z',
+          category: 'alphabet',
+          confidence: 0.94,
+          description: 'Index finger tracing a Z in the air (Letter Z)'
+        };
+      }
+    }
+
+    // J: Pinky extended carving a J curve downward
+    if (f.pinky.isExtended && f.index.isCurled && f.middle.isCurled && f.ring.isCurled) {
+      if (motion.totalDisplacement > 0.12 && (motion.oscillationsX >= 1 || motion.vy > 0.12)) {
+        return {
+          text: 'J',
+          category: 'alphabet',
+          confidence: 0.93,
+          description: 'Pinky drawing a J curve in the air (Letter J)'
+        };
+      }
+    }
+
     // THANK YOU: Flat hand starting near chin/face moving outward toward camera
-    // Flat hand moving in -z or moving down-forward
-    if (allExtended && motion.vy > 0.15 && motion.totalDisplacement > 0.12 && landmarks[8].y > 0.25) {
-      // In ASL: hand touches chin then moves toward receiver
+    if (allExtended && motion.vy > 0.14 && motion.totalDisplacement > 0.10 && landmarks[8].y > 0.22) {
       return {
         text: 'THANK YOU',
         category: 'conversational',
@@ -236,7 +258,7 @@ export class GestureEngine {
   }
 
   /**
-   * Comprehensive Static ASL Classifier
+   * Comprehensive Static ASL Classifier - Full A-Z Alphabet & Signs
    */
   classifyStaticSigns(landmarks, handedness) {
     const f = analyzeFingers(landmarks);
@@ -246,10 +268,10 @@ export class GestureEngine {
     const { thumb, index, middle, ring, pinky, pinches } = f;
 
     // ----------------------------------------------------
-    // CONVERSATIONAL / COMMON GESTURES
+    // 1. CONVERSATIONAL / COMMON SIGNS
     // ----------------------------------------------------
 
-    // "I LOVE YOU" (ASL): Thumb, Index, Pinky extended; Middle & Ring curled
+    // "I LOVE YOU": Thumb, Index, Pinky extended; Middle & Ring curled
     if (thumb.isExtended && index.isExtended && !middle.isExtended && !ring.isExtended && pinky.isExtended) {
       return {
         text: 'I LOVE YOU',
@@ -279,10 +301,106 @@ export class GestureEngine {
       };
     }
 
-    // "PEACE" / "VICTORY" / "V": Index and Middle spread in V, Ring and Pinky curled
+    // "NO": Index and Middle fingertips pinched together onto Thumb tip, Ring and Pinky curled
+    if (pinches.thumbIndex < 0.32 && pinches.thumbMiddle < 0.32 && ring.isCurled && pinky.isCurled) {
+      return {
+        text: 'NO',
+        category: 'conversational',
+        confidence: 0.94,
+        description: 'Index & Middle snapped onto Thumb (No / Negative)'
+      };
+    }
+
+    // ----------------------------------------------------
+    // 2. TWO-FINGER SIGNS: H, G, R, K, P, Q, V, U
+    // ----------------------------------------------------
+
+    // "H": Index & Middle extended horizontally together
+    if (index.isExtended && middle.isExtended && ring.isCurled && pinky.isCurled) {
+      const vIndex = getVector(landmarks[5], landmarks[8]);
+      const isHorizontal = Math.abs(vIndex.x) > Math.abs(vIndex.y) * 1.05;
+      if (isHorizontal) {
+        return {
+          text: 'H',
+          category: 'alphabet',
+          confidence: 0.94,
+          description: 'Index & Middle extended horizontally side-by-side (Letter H)'
+        };
+      }
+    }
+
+    // "G": Index pointing horizontally sideways, thumb parallel, other 3 curled
+    if (index.isExtended && middle.isCurled && ring.isCurled && pinky.isCurled) {
+      const vIndex = getVector(landmarks[5], landmarks[8]);
+      const isHorizontal = Math.abs(vIndex.x) > Math.abs(vIndex.y) * 1.1;
+      const thumbNearIndex = distance3D(landmarks[4], landmarks[8]) / scale < 0.55;
+      if (isHorizontal && thumbNearIndex) {
+        return {
+          text: 'G',
+          category: 'alphabet',
+          confidence: 0.93,
+          description: 'Index pointing horizontally with thumb parallel (Letter G)'
+        };
+      }
+    }
+
+    // "P": K handshape pointing downward
+    if (index.isExtended && middle.isExtended && ring.isCurled && pinky.isCurled) {
+      const isPointingDown = landmarks[8].y > landmarks[5].y + scale * 0.1 && landmarks[12].y > landmarks[9].y + scale * 0.1;
+      if (isPointingDown) {
+        return {
+          text: 'P',
+          category: 'alphabet',
+          confidence: 0.92,
+          description: 'K handshape pointing downward (Letter P)'
+        };
+      }
+    }
+
+    // "Q": Index and thumb pointing downward, other 3 curled
+    if (index.isExtended && middle.isCurled && ring.isCurled && pinky.isCurled) {
+      const isPointingDown = landmarks[8].y > landmarks[5].y + scale * 0.1 && landmarks[4].y > landmarks[2].y + scale * 0.1;
+      if (isPointingDown) {
+        return {
+          text: 'Q',
+          category: 'alphabet',
+          confidence: 0.92,
+          description: 'Index and thumb pointing downward (Letter Q)'
+        };
+      }
+    }
+
+    // "R": Index and Middle crossed
+    if (index.isExtended && middle.isExtended && !ring.isExtended && !pinky.isExtended) {
+      const isCrossed = Math.abs(landmarks[8].x - landmarks[12].x) < 0.04 * scale;
+      if (isCrossed) {
+        return {
+          text: 'R',
+          category: 'alphabet',
+          confidence: 0.93,
+          description: 'Index and Middle crossed (Letter R)'
+        };
+      }
+    }
+
+    // "K": Index upright, Middle angled forward at 45°, Thumb between index and middle
+    if (index.isExtended && middle.isExtended && ring.isCurled && pinky.isCurled) {
+      const isUpright = landmarks[8].y < landmarks[5].y && landmarks[12].y < landmarks[9].y;
+      const thumbNearMiddle = distance3D(landmarks[4], landmarks[10]) / scale < 0.45;
+      if (isUpright && thumbNearMiddle) {
+        return {
+          text: 'K',
+          category: 'alphabet',
+          confidence: 0.93,
+          description: 'Index pointing up, Middle forward with thumb between (Letter K)'
+        };
+      }
+    }
+
+    // "V" & "U": Index and Middle extended upright
     if (index.isExtended && middle.isExtended && !ring.isExtended && !pinky.isExtended) {
       const distIndexMiddleTips = distance3D(landmarks[8], landmarks[12]) / scale;
-      if (distIndexMiddleTips > 0.35) {
+      if (distIndexMiddleTips > 0.32) {
         return {
           text: 'V',
           category: 'alphabet',
@@ -290,7 +408,6 @@ export class GestureEngine {
           description: 'Peace sign / ASL letter V'
         };
       } else {
-        // "U": Index and Middle held tight together
         return {
           text: 'U',
           category: 'alphabet',
@@ -300,23 +417,17 @@ export class GestureEngine {
       }
     }
 
-    // "OK" / "F": Thumb & Index pinch in circle, Middle, Ring, Pinky extended
+    // ----------------------------------------------------
+    // 3. SINGLE FINGER & PINCH SIGNS: F, L, D, I, X, Y
+    // ----------------------------------------------------
+
+    // "F": Thumb & Index pinch in circle, Middle, Ring, Pinky extended upright
     if (pinches.thumbIndex < 0.28 && middle.isExtended && ring.isExtended && pinky.isExtended) {
       return {
-        text: 'OK',
-        category: 'conversational',
-        confidence: 0.95,
-        description: 'OK sign / ASL letter F'
-      };
-    }
-
-    // "W": Index, Middle, Ring extended upright in W; Thumb holds Pinky
-    if (index.isExtended && middle.isExtended && ring.isExtended && !pinky.isExtended) {
-      return {
-        text: 'W',
+        text: 'F',
         category: 'alphabet',
-        confidence: 0.94,
-        description: 'Three fingers extended in W shape (Letter W)'
+        confidence: 0.95,
+        description: 'Thumb & Index touching in circle, other 3 upright (Letter F)'
       };
     }
 
@@ -335,7 +446,7 @@ export class GestureEngine {
       }
     }
 
-    // "Y": Thumb and Pinky extended out ("hang loose"), middle 3 curled
+    // "Y": Thumb and Pinky extended out, middle 3 curled
     if (thumb.isExtended && !index.isExtended && !middle.isExtended && !ring.isExtended && pinky.isExtended) {
       return {
         text: 'Y',
@@ -355,9 +466,9 @@ export class GestureEngine {
       };
     }
 
-    // "D": Index straight up, thumb touching curled middle/ring tips (forming circle)
+    // "D": Index straight up, thumb touching middle/ring tips
     if (index.isExtended && !middle.isExtended && !ring.isExtended && !pinky.isExtended) {
-      if (pinches.thumbMiddle < 0.35 || pinches.thumbRing < 0.35) {
+      if (pinches.thumbMiddle < 0.38 || pinches.thumbRing < 0.38) {
         return {
           text: 'D',
           category: 'alphabet',
@@ -373,13 +484,36 @@ export class GestureEngine {
       };
     }
 
+    // "X": Index finger hooked / bent, other fingers closed
+    if (index.isBent && middle.isCurled && ring.isCurled && pinky.isCurled) {
+      return {
+        text: 'X',
+        category: 'alphabet',
+        confidence: 0.91,
+        description: 'Index bent into a hook (Letter X)'
+      };
+    }
+
+    // ----------------------------------------------------
+    // 4. MULTI-FINGER SIGNS: W, B, C, O, SPACE
+    // ----------------------------------------------------
+
+    // "W": Index, Middle, Ring extended upright in W; Thumb holds Pinky
+    if (index.isExtended && middle.isExtended && ring.isExtended && !pinky.isExtended) {
+      return {
+        text: 'W',
+        category: 'alphabet',
+        confidence: 0.94,
+        description: 'Three fingers extended in W shape (Letter W)'
+      };
+    }
+
     // "B": 4 fingers straight up tightly together, thumb folded across palm
     if (index.isExtended && middle.isExtended && ring.isExtended && pinky.isExtended && thumb.isFolded) {
-      // Fingers must be pressed tightly together (not open/spread palm)
       const fingerGap1 = distance3D(landmarks[8], landmarks[12]) / scale;
       const fingerGap2 = distance3D(landmarks[12], landmarks[16]) / scale;
       const fingerGap3 = distance3D(landmarks[16], landmarks[20]) / scale;
-      if (fingerGap1 < 0.22 && fingerGap2 < 0.22 && fingerGap3 < 0.22) {
+      if (fingerGap1 < 0.24 && fingerGap2 < 0.24 && fingerGap3 < 0.24) {
         return {
           text: 'B',
           category: 'alphabet',
@@ -389,11 +523,10 @@ export class GestureEngine {
       }
     }
 
-    // "OPEN PALM" / "5" / SPACE: All 5 fingers extended and spread
+    // "SPACE" / "OPEN PALM": All 5 fingers extended and spread
     if (index.isExtended && middle.isExtended && ring.isExtended && pinky.isExtended && thumb.isExtended) {
-      // Check tilt: if horizontal or tilted down -> SPACE control
       const vPalm = getVector(wrist, landmarks[9]);
-      if (Math.abs(vPalm.x) > Math.abs(vPalm.y) * 1.1) {
+      if (Math.abs(vPalm.x) > Math.abs(vPalm.y) * 1.05) {
         return {
           text: 'SPACE',
           category: 'control',
@@ -415,23 +548,75 @@ export class GestureEngine {
       return {
         text: 'C',
         category: 'alphabet',
-        confidence: 0.91,
+        confidence: 0.92,
         description: 'Curved hand resembling the letter C'
       };
     }
 
     // "O": All fingertips touching thumb tip forming a closed circle
-    if (pinches.thumbIndex < 0.24 && pinches.thumbMiddle < 0.28 && !index.isExtended && !middle.isExtended) {
+    if (pinches.thumbIndex < 0.26 && pinches.thumbMiddle < 0.28 && !index.isExtended && !middle.isExtended) {
       return {
         text: 'O',
         category: 'alphabet',
-        confidence: 0.92,
+        confidence: 0.93,
         description: 'Fingers touching thumb tip in a circle (Letter O)'
       };
     }
 
-    // "A": Tight fist, thumb resting straight along side of index finger
+    // ----------------------------------------------------
+    // 5. FIST VARIATIONS: E, T, M, N, A, S
+    // ----------------------------------------------------
+
+    // "E": 4 fingertips curled tightly resting on top of thumb folded across palm
+    if (!index.isExtended && !middle.isExtended && !ring.isExtended && !pinky.isExtended) {
+      const isCurledDown = landmarks[8].y > landmarks[6].y && landmarks[12].y > landmarks[10].y;
+      const tipsNearThumb = pinches.thumbIndex < 0.38 && pinches.thumbMiddle < 0.38;
+      if (isCurledDown && tipsNearThumb) {
+        return {
+          text: 'E',
+          category: 'alphabet',
+          confidence: 0.92,
+          description: 'Fingertips curled tightly resting on thumb folded across palm (Letter E)'
+        };
+      }
+    }
+
+    // Fist-based letters (A, S, T, M, N)
     if (index.isCurled && middle.isCurled && ring.isCurled && pinky.isCurled) {
+      // "T": Thumb tucked between index and middle
+      const thumbBetweenIndexMiddle = Math.abs(landmarks[4].x - (landmarks[6].x + landmarks[10].x) / 2) / scale;
+      if (thumbBetweenIndexMiddle < 0.22 && landmarks[4].y < landmarks[10].y) {
+        return {
+          text: 'T',
+          category: 'alphabet',
+          confidence: 0.92,
+          description: 'Fist with thumb tucked between index and middle (Letter T)'
+        };
+      }
+
+      // "M": Thumb under index, middle, ring fingers (pointing toward pinky)
+      const thumbNearPinky = distance3D(landmarks[4], landmarks[17]) / scale < 0.44;
+      if (thumbNearPinky) {
+        return {
+          text: 'M',
+          category: 'alphabet',
+          confidence: 0.91,
+          description: 'Three fingers folded over thumb (Letter M)'
+        };
+      }
+
+      // "N": Thumb under index and middle fingers
+      const thumbUnderMiddle = distance3D(landmarks[4], landmarks[13]) / scale < 0.42;
+      if (thumbUnderMiddle) {
+        return {
+          text: 'N',
+          category: 'alphabet',
+          confidence: 0.91,
+          description: 'Two fingers folded over thumb (Letter N)'
+        };
+      }
+
+      // "A": Tight fist, thumb resting upright along outer side of index finger
       if (thumb.distFromIndexMcp < 0.55 && landmarks[4].y < landmarks[3].y) {
         return {
           text: 'A',
@@ -441,12 +626,12 @@ export class GestureEngine {
         };
       }
 
-      // "S": Fist with thumb crossed over the front of the curled fingers
+      // "S": Fist with thumb tucked across the front of the curled fingers
       if (thumb.distFromIndexMcp < 0.50 && landmarks[4].x > landmarks[5].x - 0.05) {
         return {
           text: 'S',
           category: 'alphabet',
-          confidence: 0.91,
+          confidence: 0.92,
           description: 'Fist with thumb tucked across front of fingers (Letter S)'
         };
       }

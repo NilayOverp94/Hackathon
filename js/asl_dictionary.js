@@ -1,5 +1,5 @@
 /**
- * asl_dictionary.js - Reference Database for ASL Gestures & Signs
+ * asl_dictionary.js - Comprehensive Reference Database for Full ASL Alphabet & Signs
  */
 
 export const ASL_SIGNS = [
@@ -37,6 +37,14 @@ export const ASL_SIGNS = [
     tips: 'Make a fist and nod it vertically twice.'
   },
   {
+    name: 'NO',
+    category: 'Conversational',
+    badge: 'Static',
+    description: 'Index and Middle fingers snapped closed onto thumb tip.',
+    icon: '🤏',
+    tips: 'Pinch index and middle fingertips quickly to thumb tip.'
+  },
+  {
     name: 'GOOD',
     category: 'Conversational',
     badge: 'Static',
@@ -58,7 +66,7 @@ export const ASL_SIGNS = [
     badge: 'Static',
     description: 'Thumb and index finger touching in a circle; middle, ring, pinky straight.',
     icon: '👌',
-    tips: 'Pinch index and thumb into a ring.'
+    tips: 'Pinch index and thumb into a ring with 3 fingers up.'
   },
   {
     name: 'HELP',
@@ -69,7 +77,7 @@ export const ASL_SIGNS = [
     tips: 'Rest a thumbs-up fist atop a flat open palm.'
   },
 
-  // Alphabets
+  // Full 26-Letter ASL Fingerspelling Alphabet
   {
     name: 'A',
     category: 'Alphabet',
@@ -100,7 +108,39 @@ export const ASL_SIGNS = [
     badge: 'Fingerspell',
     description: 'Index finger straight up; thumb touches tips of middle, ring, pinky.',
     icon: '🇩',
-    tips: 'Form a ring with thumb and other 3 fingers while index stands tall.'
+    tips: 'Form a ring with thumb and middle fingers while index points up.'
+  },
+  {
+    name: 'E',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'All 4 fingertips curled tightly with tips resting on top edge of thumb folded across palm.',
+    icon: '🇪',
+    tips: 'Curl all fingers tightly down onto your tucked thumb.'
+  },
+  {
+    name: 'F',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'Index finger and thumb touching tips in circle; middle, ring, pinky extended upright.',
+    icon: '🇫',
+    tips: 'Identical to OK sign: index + thumb circle, 3 fingers standing tall.'
+  },
+  {
+    name: 'G',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'Index finger pointing horizontally sideways with thumb parallel.',
+    icon: '🇬',
+    tips: 'Point index sideways like pointing horizontally, thumb parallel.'
+  },
+  {
+    name: 'H',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'Index and Middle fingers extended together pointing horizontally sideways.',
+    icon: '🇭',
+    tips: 'Keep index and middle tightly paired, pointing sideways.'
   },
   {
     name: 'I',
@@ -108,7 +148,23 @@ export const ASL_SIGNS = [
     badge: 'Fingerspell',
     description: 'Pinky finger extended straight up; other fingers curled into fist.',
     icon: 'ℹ️',
-    tips: 'Only pinky stays up.'
+    tips: 'Only pinky stays up with closed fist.'
+  },
+  {
+    name: 'J',
+    category: 'Alphabet',
+    badge: 'Dynamic',
+    description: 'Pinky finger drawing a swooping J curve down and up in the air.',
+    icon: '🇯',
+    tips: 'Make an I handshape and trace a J swoop.'
+  },
+  {
+    name: 'K',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'Index finger pointing straight up, Middle angled forward at 45°, Thumb between them.',
+    icon: '🇰',
+    tips: 'Make a V shape and place thumb between index and middle.'
   },
   {
     name: 'L',
@@ -119,12 +175,68 @@ export const ASL_SIGNS = [
     tips: 'Thumb pointing sideways, index pointing straight up.'
   },
   {
+    name: 'M',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'Three fingers (index, middle, ring) folded over thumb tucked underneath.',
+    icon: 'Ⓜ️',
+    tips: 'Tuck thumb under index, middle, and ring fingers.'
+  },
+  {
+    name: 'N',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'Two fingers (index, middle) folded over thumb tucked underneath.',
+    icon: '🇳',
+    tips: 'Tuck thumb under index and middle fingers.'
+  },
+  {
     name: 'O',
     category: 'Alphabet',
     badge: 'Fingerspell',
     description: 'All fingertips meet the thumb tip to form an O shape.',
     icon: '⭕',
     tips: 'Form a round loop with all fingertips.'
+  },
+  {
+    name: 'P',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'K handshape oriented pointing downwards toward the floor.',
+    icon: '🇵',
+    tips: 'Hold a K sign and tilt your wrist downwards.'
+  },
+  {
+    name: 'Q',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'G handshape (index and thumb) oriented pointing downwards.',
+    icon: '🇶',
+    tips: 'Hold index and thumb pointing down toward the floor.'
+  },
+  {
+    name: 'R',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'Index and middle fingers crossed over each other.',
+    icon: '🇷',
+    tips: 'Cross your index and middle fingers like wishing for luck.'
+  },
+  {
+    name: 'S',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'Tight fist with thumb crossed over the front of all curled fingers.',
+    icon: '🇸',
+    tips: 'Make a fist with thumb resting across the front of fingers.'
+  },
+  {
+    name: 'T',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'Fist with thumb tucked between index and middle finger knuckles.',
+    icon: '🇹',
+    tips: 'Tuck thumb tip between your index and middle fingers.'
   },
   {
     name: 'U',
@@ -151,12 +263,28 @@ export const ASL_SIGNS = [
     tips: 'Three middle fingers straight up.'
   },
   {
+    name: 'X',
+    category: 'Alphabet',
+    badge: 'Fingerspell',
+    description: 'Index finger hooked/bent at first joint; other fingers curled.',
+    icon: '❌',
+    tips: 'Curl index finger like a pirate hook.'
+  },
+  {
     name: 'Y',
     category: 'Alphabet',
     badge: 'Fingerspell',
     description: 'Thumb and pinky extended outward; middle 3 fingers curled in.',
     icon: '🤙',
     tips: 'Also known as the Shaka or phone sign.'
+  },
+  {
+    name: 'Z',
+    category: 'Alphabet',
+    badge: 'Dynamic',
+    description: 'Index finger extended, tracing a Z path in the air.',
+    icon: '⚡',
+    tips: 'Point index finger and draw a Z in the air.'
   },
 
   // Practical Controls
@@ -174,6 +302,6 @@ export const ASL_SIGNS = [
     badge: 'Action',
     description: 'Hand swipe horizontally to the left.',
     icon: '⌫',
-    tips: 'Swipe hand swiftly left to erase previous character.'
+    tips: 'Swipe hand swiftly left to instantly erase previous character.'
   }
 ];

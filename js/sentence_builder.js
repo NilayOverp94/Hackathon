@@ -27,6 +27,7 @@ export class SentenceBuilder {
     this.lastSeenTime = 0;
     this.lastCommittedToken = null;
     this.lastCommitTime = 0;
+    this.lastBackspaceTime = 0;
     this.suppressLettersUntil = 0;
 
     // Text state
@@ -48,6 +49,21 @@ export class SentenceBuilder {
         this.currentCandidate = null;
         if (this.onHoldProgress) this.onHoldProgress(0, null);
         this.lastCommittedToken = null;
+      }
+      return;
+    }
+
+    // Immediate action for BACKSPACE swipe: execute immediately with 380ms debounce
+    if (gesture.text === 'BACKSPACE') {
+      if (now - this.lastBackspaceTime > 380) {
+        this.lastBackspaceTime = now;
+        this.commitToken(gesture);
+        if (this.onHoldProgress) {
+          this.onHoldProgress(1.0, gesture);
+          setTimeout(() => {
+            if (this.onHoldProgress) this.onHoldProgress(0, null);
+          }, 200);
+        }
       }
       return;
     }
@@ -186,8 +202,11 @@ export class SentenceBuilder {
   backspace() {
     if (this.fullSentence.length > 0) {
       this.fullSentence = this.fullSentence.slice(0, -1);
-      if (this.currentWord.length > 0) {
-        this.currentWord = this.currentWord.slice(0, -1);
+      const lastSpaceIndex = this.fullSentence.lastIndexOf(' ');
+      if (lastSpaceIndex !== -1) {
+        this.currentWord = this.fullSentence.slice(lastSpaceIndex + 1);
+      } else {
+        this.currentWord = this.fullSentence;
       }
       this.updatePredictions();
     }
