@@ -262,7 +262,23 @@ export class SentenceBuilder {
       'YES': 'Yes, absolutely.',
       'NO': 'No, thank you.',
       'GOOD': 'Good.',
-      'BAD': 'Bad.'
+      'BAD': 'Bad.',
+      'MORE': 'I would like more.',
+      'STOP': 'Please stop.',
+      'WHERE': 'Where is it?',
+      'WATER': 'Can I have some water?',
+      'EAT': 'I would like food.',
+      'DRINK': 'I would like a drink.',
+      'TIME': 'What time is it?',
+      'HAPPY': 'I am so happy!',
+      'SORRY': 'I am sorry.',
+      'FINE': 'I am doing fine.',
+      'YOU': 'You.',
+      'ME': 'Me.',
+      'LOOK': 'Look at that.',
+      'WORK': 'Time to work.',
+      'PLAY': 'Let us play!',
+      'EXCELLENT': 'Excellent!'
     };
 
     if (phraseMap[text.toUpperCase()]) {

@@ -179,6 +179,52 @@ export class GestureEngine {
       };
     }
 
+    // STOP (Two-Hand): One flat base palm, other flat hand chopping down vertically onto it
+    if (isHand1FlatBase && isHand2FlatBase && Math.abs(hand1[0].y - hand2[0].y) > 0.08) {
+      return {
+        text: 'STOP',
+        category: 'conversational',
+        confidence: 0.93,
+        description: 'One flat hand chopping onto other flat palm (Stop)'
+      };
+    }
+
+    // MORE (Two-Hand): Both hands with pinched fingertips touching together
+    const isHand1Pinched = f1.pinches.thumbIndex < 0.35 && f1.pinches.thumbMiddle < 0.35;
+    const isHand2Pinched = f2.pinches.thumbIndex < 0.35 && f2.pinches.thumbMiddle < 0.35;
+    if (isHand1Pinched && isHand2Pinched) {
+      return {
+        text: 'MORE',
+        category: 'conversational',
+        confidence: 0.93,
+        description: 'Both hands: Pinched fingertips touching together (More)'
+      };
+    }
+
+    // WORK (Two-Hand): Two fists tapping on top of each other
+    const isHand1Fist = f1.index.isCurled && f1.middle.isCurled && f1.ring.isCurled && f1.pinky.isCurled;
+    const isHand2Fist = f2.index.isCurled && f2.middle.isCurled && f2.ring.isCurled && f2.pinky.isCurled;
+    if (isHand1Fist && isHand2Fist) {
+      return {
+        text: 'WORK',
+        category: 'conversational',
+        confidence: 0.92,
+        description: 'Two fists tapping on top of each other (Work)'
+      };
+    }
+
+    // PLAY (Two-Hand): Both hands in "Y" Shaka shape
+    const isHand1Y = f1.thumb.isExtended && f1.pinky.isExtended && f1.index.isCurled && f1.middle.isCurled;
+    const isHand2Y = f2.thumb.isExtended && f2.pinky.isExtended && f2.index.isCurled && f2.middle.isCurled;
+    if (isHand1Y && isHand2Y) {
+      return {
+        text: 'PLAY',
+        category: 'conversational',
+        confidence: 0.94,
+        description: 'Both hands in Y shapes shaking (Play / Party)'
+      };
+    }
+
     return null;
   }
 
@@ -232,6 +278,18 @@ export class GestureEngine {
       }
     }
 
+    // WHERE: Index finger pointing up, oscillating / wagging side-to-side
+    if (f.index.isExtended && !f.middle.isExtended && !f.ring.isExtended && !f.pinky.isExtended) {
+      if (motion.oscillationsX >= 2) {
+        return {
+          text: 'WHERE',
+          category: 'conversational',
+          confidence: 0.94,
+          description: 'Index finger pointing up, wagging side to side (Where)'
+        };
+      }
+    }
+
     // J: Pinky extended carving a J curve downward
     if (f.pinky.isExtended && f.index.isCurled && f.middle.isCurled && f.ring.isCurled) {
       if (motion.totalDisplacement > 0.12 && (motion.oscillationsX >= 1 || motion.vy > 0.12)) {
@@ -242,6 +300,36 @@ export class GestureEngine {
           description: 'Pinky drawing a J curve in the air (Letter J)'
         };
       }
+    }
+
+    // PLEASE: Flat open hand over chest area moving in small circular/lateral motion
+    if (allExtended && (motion.oscillationsX >= 1 && motion.oscillationsY >= 1) && landmarks[0].y > 0.38) {
+      return {
+        text: 'PLEASE',
+        category: 'conversational',
+        confidence: 0.93,
+        description: 'Flat open palm rubbing chest in a circle (Please)'
+      };
+    }
+
+    // SORRY: Closed fist over chest area moving in small circular motion
+    if (allCurled && (motion.oscillationsX >= 1 && motion.oscillationsY >= 1) && landmarks[0].y > 0.38) {
+      return {
+        text: 'SORRY',
+        category: 'conversational',
+        confidence: 0.93,
+        description: 'Fist rubbing chest in a circle (Sorry)'
+      };
+    }
+
+    // HAPPY: Flat open hand brushing upward repeatedly
+    if (allExtended && motion.vy < -0.12 && motion.oscillationsY >= 1 && landmarks[0].y > 0.35) {
+      return {
+        text: 'HAPPY',
+        category: 'conversational',
+        confidence: 0.92,
+        description: 'Flat hand brushing upward across chest (Happy)'
+      };
     }
 
     // THANK YOU: Flat hand starting near chin/face moving outward toward camera
@@ -309,6 +397,96 @@ export class GestureEngine {
         confidence: 0.94,
         description: 'Index & Middle snapped onto Thumb (No / Negative)'
       };
+    }
+
+    // "WATER": "W" handshape near chin/mouth area
+    if (index.isExtended && middle.isExtended && ring.isExtended && !pinky.isExtended && landmarks[8].y < 0.35) {
+      return {
+        text: 'WATER',
+        category: 'conversational',
+        confidence: 0.94,
+        description: 'W handshape held near chin/mouth (Water)'
+      };
+    }
+
+    // "EAT" / "FOOD": Flat-O / fingertips pinched together touching near mouth
+    if (pinches.thumbIndex < 0.28 && pinches.thumbMiddle < 0.30 && landmarks[8].y < 0.35) {
+      return {
+        text: 'EAT',
+        category: 'conversational',
+        confidence: 0.93,
+        description: 'Fingertips pressed together touching near mouth (Eat / Food)'
+      };
+    }
+
+    // "MORE" (Single-Hand): All fingertips bunched together pointing upright in front
+    if (pinches.thumbIndex < 0.26 && pinches.thumbMiddle < 0.28 && pinches.thumbRing < 0.30 && landmarks[8].y >= 0.35 && !index.isExtended) {
+      return {
+        text: 'MORE',
+        category: 'conversational',
+        confidence: 0.92,
+        description: 'Fingertips pressed together facing upright (More)'
+      };
+    }
+
+    // "YOU": Index finger pointing directly forward toward camera/person
+    if (index.isExtended && middle.isCurled && ring.isCurled && pinky.isCurled) {
+      if (landmarks[8].z < landmarks[5].z - 0.05 && Math.abs(landmarks[8].y - landmarks[5].y) < scale * 0.45) {
+        return {
+          text: 'YOU',
+          category: 'conversational',
+          confidence: 0.94,
+          description: 'Index finger pointing forward toward person (You)'
+        };
+      }
+    }
+
+    // "ME" / "I": Index finger pointing directly back at chest
+    if (index.isExtended && middle.isCurled && ring.isCurled && pinky.isCurled) {
+      if (landmarks[8].y > landmarks[5].y + scale * 0.12 && landmarks[8].z > landmarks[5].z) {
+        return {
+          text: 'ME',
+          category: 'conversational',
+          confidence: 0.93,
+          description: 'Index finger pointing inward to chest (Me / I)'
+        };
+      }
+    }
+
+    // "LOOK" / "SEE": "V" handshape pointing forward toward camera
+    if (index.isExtended && middle.isExtended && ring.isCurled && pinky.isCurled) {
+      if (landmarks[8].z < landmarks[5].z - 0.05 && landmarks[12].z < landmarks[9].z - 0.05) {
+        return {
+          text: 'LOOK',
+          category: 'conversational',
+          confidence: 0.93,
+          description: 'V shape pointing forward toward camera (Look / See)'
+        };
+      }
+    }
+
+    // "TIME": Index finger touching wrist area
+    if (index.isExtended && middle.isCurled && ring.isCurled && pinky.isCurled) {
+      if (landmarks[8].y > 0.65) {
+        return {
+          text: 'TIME',
+          category: 'conversational',
+          confidence: 0.91,
+          description: 'Index finger tapping wrist (Time)'
+        };
+      }
+    }
+
+    // "FINE": Open 5 hand with thumb pointing at chest
+    if (index.isExtended && middle.isExtended && ring.isExtended && pinky.isExtended && thumb.isExtended) {
+      if (Math.abs(landmarks[4].y - wrist.y) < scale * 0.4 && landmarks[4].z > wrist.z) {
+        return {
+          text: 'FINE',
+          category: 'conversational',
+          confidence: 0.92,
+          description: 'Open 5 hand with thumb touching chest (Fine / Doing Well)'
+        };
+      }
     }
 
     // ----------------------------------------------------
@@ -498,6 +676,46 @@ export class GestureEngine {
     // 4. MULTI-FINGER SIGNS: W, B, C, O, SPACE
     // ----------------------------------------------------
 
+    // "3" (ASL): Thumb, Index, Middle extended; Ring and Pinky curled
+    if (thumb.isExtended && index.isExtended && middle.isExtended && ring.isCurled && pinky.isCurled) {
+      return {
+        text: '3',
+        category: 'numbers',
+        confidence: 0.94,
+        description: 'Thumb, Index, and Middle extended upright (Number 3)'
+      };
+    }
+
+    // "6" (ASL): Pinky tip touching Thumb tip, Index, Middle, Ring upright
+    if (pinches.thumbPinky < 0.28 && index.isExtended && middle.isExtended && ring.isExtended) {
+      return {
+        text: '6',
+        category: 'numbers',
+        confidence: 0.93,
+        description: 'Pinky touching thumb with 3 fingers upright (Number 6)'
+      };
+    }
+
+    // "7" (ASL): Ring tip touching Thumb tip, Index, Middle, Pinky upright
+    if (pinches.thumbRing < 0.28 && index.isExtended && middle.isExtended && pinky.isExtended) {
+      return {
+        text: '7',
+        category: 'numbers',
+        confidence: 0.93,
+        description: 'Ring finger touching thumb with other 3 fingers upright (Number 7)'
+      };
+    }
+
+    // "8" (ASL): Middle tip touching Thumb tip, Index, Ring, Pinky upright
+    if (pinches.thumbMiddle < 0.28 && index.isExtended && ring.isExtended && pinky.isExtended) {
+      return {
+        text: '8',
+        category: 'numbers',
+        confidence: 0.93,
+        description: 'Middle finger touching thumb with other 3 fingers upright (Number 8)'
+      };
+    }
+
     // "W": Index, Middle, Ring extended upright in W; Thumb holds Pinky
     if (index.isExtended && middle.isExtended && ring.isExtended && !pinky.isExtended) {
       return {
@@ -545,6 +763,14 @@ export class GestureEngine {
     // "C": Hand curved in a cup / C shape
     const cCurve = this.checkCShape(landmarks, scale);
     if (cCurve) {
+      if (landmarks[4].y < 0.35) {
+        return {
+          text: 'DRINK',
+          category: 'conversational',
+          confidence: 0.92,
+          description: 'C handshape tilted toward mouth (Drink)'
+        };
+      }
       return {
         text: 'C',
         category: 'alphabet',

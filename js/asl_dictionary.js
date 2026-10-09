@@ -45,6 +45,118 @@ export const ASL_SIGNS = [
     tips: 'Pinch index and middle fingertips quickly to thumb tip.'
   },
   {
+    name: 'PLEASE',
+    category: 'Conversational',
+    badge: 'Dynamic',
+    description: 'Flat open palm rubbing chest area gently in a circular motion.',
+    icon: '🤲',
+    tips: 'Rub flat palm gently across your chest.'
+  },
+  {
+    name: 'SORRY',
+    category: 'Conversational',
+    badge: 'Dynamic',
+    description: 'Closed fist rubbing chest in a circular motion.',
+    icon: '🥺',
+    tips: 'Make a fist and move it in small circles on your chest.'
+  },
+  {
+    name: 'HAPPY',
+    category: 'Conversational',
+    badge: 'Dynamic',
+    description: 'Flat open hand brushing upward repeatedly across chest.',
+    icon: '😊',
+    tips: 'Brush flat palm upward toward chin.'
+  },
+  {
+    name: 'MORE',
+    category: 'Conversational',
+    badge: 'Two-Hand / Single',
+    description: 'Fingertips pinched together touching (or tapping together).',
+    icon: '➕',
+    tips: 'Pinch all fingertips together and face them up/forward.'
+  },
+  {
+    name: 'STOP',
+    category: 'Conversational',
+    badge: 'Two-Hand',
+    description: 'One flat hand chopping down vertically into flat base palm.',
+    icon: '🛑',
+    tips: 'Chop the side of your flat hand into your other palm.'
+  },
+  {
+    name: 'WHERE',
+    category: 'Conversational',
+    badge: 'Dynamic',
+    description: 'Index finger pointing up, wagging gently side-to-side.',
+    icon: '❓',
+    tips: 'Hold index up and wag it side to side.'
+  },
+  {
+    name: 'WATER',
+    category: 'Conversational',
+    badge: 'Static',
+    description: 'W handshape held near chin or lower lip.',
+    icon: '💧',
+    tips: 'Form letter W and tap index near chin/mouth.'
+  },
+  {
+    name: 'EAT / FOOD',
+    category: 'Conversational',
+    badge: 'Static',
+    description: 'Fingertips pressed together touching near mouth.',
+    icon: '🍽️',
+    tips: 'Pinch fingertips together and hold near lips.'
+  },
+  {
+    name: 'DRINK',
+    category: 'Conversational',
+    badge: 'Static',
+    description: 'C handshape tilted towards mouth like holding a glass.',
+    icon: '🥤',
+    tips: 'Cup your hand in a C and tilt it toward your mouth.'
+  },
+  {
+    name: 'YOU',
+    category: 'Conversational',
+    badge: 'Static',
+    description: 'Index finger pointing directly forward toward camera/person.',
+    icon: '👉',
+    tips: 'Point index finger straight toward the screen.'
+  },
+  {
+    name: 'ME / I',
+    category: 'Conversational',
+    badge: 'Static',
+    description: 'Index finger pointing directly back inward to chest.',
+    icon: '👈',
+    tips: 'Point index finger inward toward yourself.'
+  },
+  {
+    name: 'LOOK / SEE',
+    category: 'Conversational',
+    badge: 'Static',
+    description: 'V handshape pointing forward toward camera.',
+    icon: '👀',
+    tips: 'Point peace sign forward toward the screen.'
+  },
+  {
+    name: 'TIME',
+    category: 'Conversational',
+    badge: 'Static',
+    description: 'Index finger tapping your wrist where a watch is worn.',
+    icon: '⌚',
+    tips: 'Tap index finger onto your wrist.'
+  },
+  {
+    name: 'FINE',
+    category: 'Conversational',
+    badge: 'Static',
+    description: 'Open 5 hand with thumb resting against chest.',
+    icon: '✨',
+    tips: 'Spread 5 fingers and touch thumb to chest.'
+  },
+  {
     name: 'GOOD',
     category: 'Conversational',
     badge: 'Static',
@@ -75,6 +187,30 @@ export const ASL_SIGNS = [
     description: 'One flat palm facing upward with a thumbs-up fist placed on top.',
     icon: '🤝',
     tips: 'Rest a thumbs-up fist atop a flat open palm.'
+  },
+  {
+    name: 'WORK',
+    category: 'Conversational',
+    badge: 'Two-Hand',
+    description: 'Two closed fists tapping together wrist-on-wrist.',
+    icon: '💼',
+    tips: 'Tap one fist on top of your other fist.'
+  },
+  {
+    name: 'PLAY',
+    category: 'Conversational',
+    badge: 'Two-Hand',
+    description: 'Both hands in Y (Shaka) handshapes shaking gently.',
+    icon: '🎉',
+    tips: 'Make two Y shapes with thumbs & pinkies and shake.'
+  },
+  {
+    name: 'EXCELLENT',
+    category: 'Conversational',
+    badge: 'Two-Hand',
+    description: 'Two thumbs up held side by side.',
+    icon: '🌟',
+    tips: 'Give two thumbs up to the camera.'
   },
 
   // Full 26-Letter ASL Fingerspelling Alphabet
@@ -285,6 +421,72 @@ export const ASL_SIGNS = [
     description: 'Index finger extended, tracing a Z path in the air.',
     icon: '⚡',
     tips: 'Point index finger and draw a Z in the air.'
+  },
+
+  // ASL Numbers
+  {
+    name: '1',
+    category: 'Numbers',
+    badge: 'Digit',
+    description: 'Single index finger pointing straight up.',
+    icon: '1️⃣',
+    tips: 'Point index finger up.'
+  },
+  {
+    name: '2',
+    category: 'Numbers',
+    badge: 'Digit',
+    description: 'Index and middle fingers extended upright (Peace sign / V).',
+    icon: '2️⃣',
+    tips: 'Show two fingers up.'
+  },
+  {
+    name: '3',
+    category: 'Numbers',
+    badge: 'Digit',
+    description: 'Thumb, index, and middle fingers extended upright.',
+    icon: '3️⃣',
+    tips: 'In official ASL: extend thumb, index, and middle.'
+  },
+  {
+    name: '4',
+    category: 'Numbers',
+    badge: 'Digit',
+    description: 'Four fingers upright with thumb tucked across palm.',
+    icon: '4️⃣',
+    tips: 'Show four fingers up with thumb tucked.'
+  },
+  {
+    name: '5',
+    category: 'Numbers',
+    badge: 'Digit',
+    description: 'All 5 fingers spread wide open.',
+    icon: '5️⃣',
+    tips: 'Hold open hand facing camera.'
+  },
+  {
+    name: '6',
+    category: 'Numbers',
+    badge: 'Digit',
+    description: 'Pinky fingertip touching thumb tip, other 3 fingers upright.',
+    icon: '6️⃣',
+    tips: 'Touch pinky to thumb with 3 fingers standing tall.'
+  },
+  {
+    name: '7',
+    category: 'Numbers',
+    badge: 'Digit',
+    description: 'Ring fingertip touching thumb tip, other 3 fingers upright.',
+    icon: '7️⃣',
+    tips: 'Touch ring finger to thumb with 3 fingers up.'
+  },
+  {
+    name: '8',
+    category: 'Numbers',
+    badge: 'Digit',
+    description: 'Middle fingertip touching thumb tip, other 3 fingers upright.',
+    icon: '8️⃣',
+    tips: 'Touch middle finger to thumb with other 3 fingers up.'
   },
 
   // Practical Controls

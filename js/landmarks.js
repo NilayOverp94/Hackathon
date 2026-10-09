@@ -147,6 +147,7 @@ export function analyzeFingers(landmarks) {
   const pinchThumbIndex = distance3D(thumbTip, landmarks[8]) / scale;
   const pinchThumbMiddle = distance3D(thumbTip, landmarks[12]) / scale;
   const pinchThumbRing = distance3D(thumbTip, landmarks[16]) / scale;
+  const pinchThumbPinky = distance3D(thumbTip, landmarks[20]) / scale;
 
   return {
     thumb: {
@@ -163,7 +164,8 @@ export function analyzeFingers(landmarks) {
     pinches: {
       thumbIndex: pinchThumbIndex,
       thumbMiddle: pinchThumbMiddle,
-      thumbRing: pinchThumbRing
+      thumbRing: pinchThumbRing,
+      thumbPinky: pinchThumbPinky
     },
     scale
   };
