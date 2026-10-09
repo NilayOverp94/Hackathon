@@ -135,11 +135,24 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <div>
-          <h2 class="modal-title">ASL Gesture Reference</h2>
-          <p class="modal-subtitle">Supported signs, fingerspelling alphabets, and practical controls</p>
+          <h2 class="modal-title">ASL Gesture Reference Guide</h2>
+          <p class="modal-subtitle">60+ supported gestures with live symbols and step-by-step instructions</p>
         </div>
         <button id="btnCloseDictionary" class="modal-close-btn">&times;</button>
       </div>
+
+      <!-- Reference Filter & Search Toolbar -->
+      <div class="modal-toolbar">
+        <div id="dictCategoryFilters" class="dict-category-filters">
+          <button class="dict-filter-btn active" data-category="all">All (60+)</button>
+          <button class="dict-filter-btn" data-category="Conversational">Conversational</button>
+          <button class="dict-filter-btn" data-category="Alphabet">Alphabet (A–Z)</button>
+          <button class="dict-filter-btn" data-category="Numbers">Numbers (1–8)</button>
+          <button class="dict-filter-btn" data-category="Controls">Controls</button>
+        </div>
+        <input type="text" id="dictSearchInput" class="dict-search-input" placeholder="Search signs, letters, or instructions (e.g. 'water', 'B', 'wave')...">
+      </div>
+
       <div class="modal-body">
         <div id="dictionaryGrid" class="dictionary-grid">
           <!-- Populated by app.js -->

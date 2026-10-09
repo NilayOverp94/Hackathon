@@ -40,6 +40,12 @@ class SignApp {
     this.btnDictionary = document.getElementById('btnDictionary');
     this.btnCloseDictionary = document.getElementById('btnCloseDictionary');
     this.dictionaryGrid = document.getElementById('dictionaryGrid');
+    this.dictSearchInput = document.getElementById('dictSearchInput');
+    this.dictCategoryFilters = document.getElementById('dictCategoryFilters');
+
+    // Reference modal state
+    this.activeDictCategory = 'all';
+    this.activeDictSearch = '';
 
     // State
     this.autoSpeak = true;
@@ -172,10 +178,36 @@ class SignApp {
     // Dictionary Modal
     this.btnDictionary?.addEventListener('click', () => {
       this.dictionaryModal.classList.add('open');
+      if (this.dictSearchInput) {
+        setTimeout(() => this.dictSearchInput.focus(), 100);
+      }
     });
 
     this.btnCloseDictionary?.addEventListener('click', () => {
       this.dictionaryModal.classList.remove('open');
+    });
+
+    // Close modal on backdrop click
+    this.dictionaryModal?.addEventListener('click', (e) => {
+      if (e.target === this.dictionaryModal) {
+        this.dictionaryModal.classList.remove('open');
+      }
+    });
+
+    // Category Filter Buttons
+    this.dictCategoryFilters?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.dict-filter-btn');
+      if (!btn) return;
+      this.dictCategoryFilters.querySelectorAll('.dict-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      this.activeDictCategory = btn.dataset.category || 'all';
+      this.renderDictionary(this.activeDictCategory, this.activeDictSearch);
+    });
+
+    // Search Input
+    this.dictSearchInput?.addEventListener('input', (e) => {
+      this.activeDictSearch = (e.target.value || '').trim().toLowerCase();
+      this.renderDictionary(this.activeDictCategory, this.activeDictSearch);
     });
 
     // Keyboard Shortcuts
@@ -365,21 +397,53 @@ class SignApp {
     });
   }
 
-  renderDictionary() {
+  renderDictionary(category = 'all', searchQuery = '') {
     if (!this.dictionaryGrid) return;
     this.dictionaryGrid.innerHTML = '';
 
-    ASL_SIGNS.forEach((sign) => {
+    const query = searchQuery.trim().toLowerCase();
+
+    const filtered = ASL_SIGNS.filter((sign) => {
+      // Category filter
+      const matchesCategory = category === 'all' || 
+        sign.category.toLowerCase() === category.toLowerCase() ||
+        (category === 'Alphabet' && sign.category === 'Alphabet') ||
+        (category === 'Numbers' && sign.category === 'Numbers');
+
+      if (!matchesCategory) return false;
+
+      // Text query filter
+      if (!query) return true;
+      return sign.name.toLowerCase().includes(query) ||
+             (sign.description && sign.description.toLowerCase().includes(query)) ||
+             (sign.tips && sign.tips.toLowerCase().includes(query)) ||
+             (sign.badge && sign.badge.toLowerCase().includes(query));
+    });
+
+    if (filtered.length === 0) {
+      this.dictionaryGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 2.5rem 1rem; text-align: center; color: var(--text-muted);">
+          <p style="font-size: 1.1rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.25rem;">No matching gestures found</p>
+          <p style="font-size: 0.8rem;">Try searching for another letter, word, or sign name.</p>
+        </div>
+      `;
+      return;
+    }
+
+    filtered.forEach((sign) => {
       const card = document.createElement('div');
       card.className = 'dict-card';
       card.innerHTML = `
         <div class="dict-card-header">
-          <span class="dict-icon">${sign.icon}</span>
-          <span class="dict-badge">${sign.badge}</span>
+          <span class="dict-icon" title="${sign.name} Symbol">${sign.icon}</span>
+          <span class="dict-badge">${sign.badge || sign.category}</span>
         </div>
         <h4 class="dict-name">${sign.name}</h4>
         <p class="dict-desc">${sign.description}</p>
-        <div class="dict-tips">${sign.tips}</div>
+        <div class="dict-instruction-box">
+          <span class="instruction-tag">HOW TO DO IT</span>
+          <span class="instruction-text">${sign.tips}</span>
+        </div>
       `;
       this.dictionaryGrid.appendChild(card);
     });
