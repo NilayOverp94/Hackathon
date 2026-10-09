@@ -1,23 +1,38 @@
 /**
- * sentence_builder.js - Stabilizer, Debounce Buffer & NLP Sentence Assembler
+ * sentence_builder.js - Stabilizer, Debounce Buffer & Predictive Text Assembler
+ * Emulates Google Keyboard (Gboard) by predicting full words rather than raw letter spam.
  */
 
+import { WordPredictor } from './word_predictor.js';
+
 export class SentenceBuilder {
-  constructor({ holdThresholdMs = 450, onTokenCommitted = null, onHoldProgress = null }) {
-    this.holdThresholdMs = holdThresholdMs;
+  constructor({
+    letterHoldMs = 650,
+    phraseHoldMs = 420,
+    onTokenCommitted = null,
+    onHoldProgress = null,
+    onPredictionsChanged = null
+  } = {}) {
+    this.letterHoldMs = letterHoldMs;
+    this.phraseHoldMs = phraseHoldMs;
     this.onTokenCommitted = onTokenCommitted;
     this.onHoldProgress = onHoldProgress;
+    this.onPredictionsChanged = onPredictionsChanged;
 
-    // Holding state for current gesture
+    this.predictor = new WordPredictor();
+
+    // Holding state
     this.currentCandidate = null;
     this.candidateStartTime = 0;
     this.lastCommittedToken = null;
     this.lastCommitTime = 0;
+    this.suppressLettersUntil = 0; // Cooldown after full-word conversational gestures
 
-    // Sentence state
+    // Text state
     this.currentWord = '';
     this.fullSentence = '';
-    this.history = []; // Array of { text, timestamp }
+    this.history = [];
+    this.currentPredictions = [];
   }
 
   /**
@@ -31,22 +46,32 @@ export class SentenceBuilder {
         this.currentCandidate = null;
         if (this.onHoldProgress) this.onHoldProgress(0, null);
       }
-      // Hand lowered/cleared: reset last committed token
       this.lastCommittedToken = null;
       return;
     }
 
+    // Suppress random letters right after completing a conversational gesture (hand relax cooldown)
+    if (gesture.category === 'alphabet' && now < this.suppressLettersUntil) {
+      if (this.currentCandidate) {
+        this.currentCandidate = null;
+        if (this.onHoldProgress) this.onHoldProgress(0, null);
+      }
+      return;
+    }
+
+    // Dynamic threshold: Letters require deliberate 650ms hold, conversational signs take 420ms
+    const requiredHold = gesture.category === 'alphabet' ? this.letterHoldMs : this.phraseHoldMs;
+
     // If same gesture continues
     if (this.currentCandidate && this.currentCandidate.text === gesture.text) {
       const elapsed = now - this.candidateStartTime;
-      const progress = Math.min(1.0, elapsed / this.holdThresholdMs);
+      const progress = Math.min(1.0, elapsed / requiredHold);
 
       if (this.onHoldProgress) {
         this.onHoldProgress(progress, gesture);
       }
 
-      if (elapsed >= this.holdThresholdMs) {
-        // Only commit if this gesture has not already been committed in this hold
+      if (elapsed >= requiredHold) {
         if (this.lastCommittedToken !== gesture.text) {
           this.commitToken(gesture);
           this.lastCommittedToken = gesture.text;
@@ -54,7 +79,7 @@ export class SentenceBuilder {
         }
       }
     } else {
-      // New gesture started
+      // New gesture candidate started
       this.currentCandidate = gesture;
       this.candidateStartTime = now;
       if (this.onHoldProgress) {
@@ -64,10 +89,11 @@ export class SentenceBuilder {
   }
 
   /**
-   * Commit verified gesture into word / sentence
+   * Commit verified gesture
    */
   commitToken(gesture) {
     const token = gesture.text;
+    const now = performance.now();
 
     if (token === 'BACKSPACE') {
       this.backspace();
@@ -76,16 +102,27 @@ export class SentenceBuilder {
     } else if (token === 'CLEAR') {
       this.clear();
     } else if (gesture.category === 'conversational') {
-      // Conversational phrases are added directly as whole words or sentences
+      // Conversational phrases are committed as full words
+      if (this.currentWord.length > 0) {
+        // Clear any unfinished partial letters before adding full phrase
+        this.fullSentence = this.fullSentence.slice(0, -this.currentWord.length);
+        this.currentWord = '';
+      }
+
       if (this.fullSentence.length > 0 && !this.fullSentence.endsWith(' ')) {
         this.fullSentence += ' ';
       }
       this.fullSentence += token;
       this.currentWord = '';
+
+      // Suppress letter false-positives for 1.2s while user returns hand
+      this.suppressLettersUntil = now + 1200;
+      this.updatePredictions();
     } else {
-      // Alphabet letters or numbers
+      // Alphabet fingerspelling
       this.currentWord += token;
       this.fullSentence += token;
+      this.updatePredictions();
     }
 
     if (this.onTokenCommitted) {
@@ -93,11 +130,54 @@ export class SentenceBuilder {
     }
   }
 
+  updatePredictions() {
+    if (this.currentWord.length > 0) {
+      this.currentPredictions = this.predictor.getPredictions(this.currentWord, 3);
+    } else {
+      this.currentPredictions = [];
+    }
+
+    if (this.onPredictionsChanged) {
+      this.onPredictionsChanged(this.currentPredictions);
+    }
+  }
+
+  /**
+   * Accept a predicted word from Google-style prediction bar
+   */
+  acceptPrediction(word) {
+    if (!word) return;
+
+    if (this.currentWord.length > 0) {
+      // Replace the partial prefix with the completed word
+      this.fullSentence = this.fullSentence.slice(0, -this.currentWord.length);
+    }
+
+    if (this.fullSentence.length > 0 && !this.fullSentence.endsWith(' ')) {
+      this.fullSentence += ' ';
+    }
+
+    this.fullSentence += word;
+    this.currentWord = '';
+    this.updatePredictions();
+
+    if (this.onTokenCommitted) {
+      this.onTokenCommitted(word, this.getFormattedSentence(), { category: 'conversational' });
+    }
+  }
+
   addSpace() {
+    // If user has a typed prefix and there is a top prediction, auto-complete it on space!
+    if (this.currentWord.length > 0 && this.currentPredictions.length > 0) {
+      this.acceptPrediction(this.currentPredictions[0]);
+      return;
+    }
+
     if (this.fullSentence.length > 0 && !this.fullSentence.endsWith(' ')) {
       this.fullSentence += ' ';
     }
     this.currentWord = '';
+    this.updatePredictions();
   }
 
   backspace() {
@@ -106,12 +186,14 @@ export class SentenceBuilder {
       if (this.currentWord.length > 0) {
         this.currentWord = this.currentWord.slice(0, -1);
       }
+      this.updatePredictions();
     }
   }
 
   clear() {
     this.fullSentence = '';
     this.currentWord = '';
+    this.updatePredictions();
   }
 
   getRawSentence() {
@@ -123,15 +205,11 @@ export class SentenceBuilder {
       return '';
     }
 
-    // Capitalize first letter of sentences
     let text = this.fullSentence.trim();
     text = text.charAt(0).toUpperCase() + text.slice(1);
     return text;
   }
 
-  /**
-   * Finish and archive current sentence into conversation history
-   */
   finishSentence() {
     const sentence = this.getFormattedSentence();
     if (sentence) {
@@ -149,25 +227,20 @@ export class SentenceBuilder {
     return this.history;
   }
 
-  /**
-   * Smart Grammar / ASL Gloss to Natural English Formatter
-   * Rules for conversational fluency
-   */
   formatNaturalGrammar(rawText) {
     if (!rawText) return '';
     let text = rawText.trim();
 
-    // Map common ASL phrases to polite natural English
     const phraseMap = {
       'HELLO': 'Hello!',
-      'THANK YOU': 'Thank you very much!',
+      'THANK YOU': 'Thank you!',
       'I LOVE YOU': 'I love you!',
       'HELP': 'I need help, please.',
       'PLEASE': 'Please.',
       'YES': 'Yes, absolutely.',
       'NO': 'No, thank you.',
-      'GOOD': 'That sounds good.',
-      'BAD': 'That is not good.'
+      'GOOD': 'Good.',
+      'BAD': 'Bad.'
     };
 
     if (phraseMap[text.toUpperCase()]) {

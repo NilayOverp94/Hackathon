@@ -133,7 +133,13 @@ export class GestureEngine {
     const dynamicSign = this.classifyDynamicSigns(primaryLandmarks, motion);
     if (dynamicSign) return dynamicSign;
 
-    // Static ASL signs & letters
+    // Strict motion filter: if hand is moving, do NOT classify static letters!
+    // Transient moving hands cause random false-positive letters.
+    if (motion.totalDisplacement > 0.04 || Math.abs(motion.vx) > 0.15 || Math.abs(motion.vy) > 0.15) {
+      return null;
+    }
+
+    // Static ASL signs & letters (only evaluated when hand is still and steady)
     return this.classifyStaticSigns(primaryLandmarks, handedness);
   }
 
@@ -367,14 +373,20 @@ export class GestureEngine {
       };
     }
 
-    // "B": 4 fingers straight up together, thumb folded across palm
+    // "B": 4 fingers straight up tightly together, thumb folded across palm
     if (index.isExtended && middle.isExtended && ring.isExtended && pinky.isExtended && thumb.isFolded) {
-      return {
-        text: 'B',
-        category: 'alphabet',
-        confidence: 0.94,
-        description: 'Four fingers upright with thumb tucked across palm (Letter B)'
-      };
+      // Fingers must be pressed tightly together (not open/spread palm)
+      const fingerGap1 = distance3D(landmarks[8], landmarks[12]) / scale;
+      const fingerGap2 = distance3D(landmarks[12], landmarks[16]) / scale;
+      const fingerGap3 = distance3D(landmarks[16], landmarks[20]) / scale;
+      if (fingerGap1 < 0.22 && fingerGap2 < 0.22 && fingerGap3 < 0.22) {
+        return {
+          text: 'B',
+          category: 'alphabet',
+          confidence: 0.94,
+          description: 'Four fingers upright held tightly together with thumb tucked across palm (Letter B)'
+        };
+      }
     }
 
     // "OPEN PALM" / "5" / SPACE: All 5 fingers extended and spread

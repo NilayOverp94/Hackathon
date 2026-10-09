@@ -358,6 +358,40 @@ body.neutral-theme {
   color: var(--text-muted);
 }
 
+/* Predictive Text Bar (Gboard Style) */
+.predictive-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 28px;
+}
+
+.predictive-chip {
+  background-color: #27272a;
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.predictive-chip:hover {
+  background-color: var(--border-light);
+  transform: translateY(-1px);
+}
+
+.predictive-chip.top-match {
+  background-color: #ffffff;
+  color: #09090b;
+  border-color: #ffffff;
+  font-weight: 600;
+}
+
 .caption-box {
   display: flex;
   align-items: center;

@@ -34,6 +34,7 @@ class SignApp {
     this.btnClearHistory = document.getElementById('btnClearHistory');
     this.fpsText = document.getElementById('fpsText');
     this.latencyText = document.getElementById('latencyText');
+    this.predictiveBar = document.getElementById('predictiveBar');
 
     // Modals
     this.dictionaryModal = document.getElementById('dictionaryModal');
@@ -60,9 +61,10 @@ class SignApp {
     // 2. Gesture Recognizer
     this.gestureEngine = new GestureEngine();
 
-    // 3. Sentence Builder
+    // 3. Sentence Builder with Gboard Word Predictions
     this.sentenceBuilder = new SentenceBuilder({
-      holdThresholdMs: 400,
+      letterHoldMs: 650,
+      phraseHoldMs: 420,
       onHoldProgress: (progress, gesture) => {
         this.ui.setHoldProgress(progress, gesture);
         if (gesture) {
@@ -71,6 +73,9 @@ class SignApp {
         } else {
           this.lastDetectedBadge.classList.remove('visible');
         }
+      },
+      onPredictionsChanged: (predictions) => {
+        this.renderPredictions(predictions);
       },
       onTokenCommitted: (token, formattedSentence, gesture) => {
         this.speech.playLockTone();
@@ -253,6 +258,24 @@ class SignApp {
     const label = this.statusIndicator.querySelector('.status-label');
     if (label) label.textContent = text;
     this.statusIndicator.className = `status-indicator ${state}`;
+  }
+
+  renderPredictions(predictions) {
+    if (!this.predictiveBar) return;
+    this.predictiveBar.innerHTML = '';
+    if (!predictions || predictions.length === 0) return;
+
+    predictions.forEach((word, idx) => {
+      const chip = document.createElement('button');
+      chip.className = `predictive-chip ${idx === 0 ? 'top-match' : ''}`;
+      chip.textContent = word;
+      chip.title = `Auto-complete "${word}" (or hold Space)`;
+      chip.addEventListener('click', () => {
+        this.sentenceBuilder.acceptPrediction(word);
+        this.updateCaptionUI(this.sentenceBuilder.getFormattedSentence());
+      });
+      this.predictiveBar.appendChild(chip);
+    });
   }
 
   updateCaptionUI(text) {
