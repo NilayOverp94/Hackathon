@@ -359,6 +359,16 @@ export class GestureEngine {
     // 1. CONVERSATIONAL / COMMON SIGNS
     // ----------------------------------------------------
 
+    // "MIDDLE FINGER" / "FUCK YOU": Middle finger extended straight up, all other fingers curled into fist
+    if (middle.isExtended && index.isCurled && ring.isCurled && pinky.isCurled && landmarks[12].y < landmarks[10].y) {
+      return {
+        text: 'FUCK YOU',
+        category: 'conversational',
+        confidence: 0.98,
+        description: 'Middle finger extended upright with fist closed (Fuck You)'
+      };
+    }
+
     // "I LOVE YOU": Thumb, Index, Pinky extended; Middle & Ring curled
     if (thumb.isExtended && index.isExtended && !middle.isExtended && !ring.isExtended && pinky.isExtended) {
       return {

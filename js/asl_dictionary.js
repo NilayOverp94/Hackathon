@@ -29,6 +29,14 @@ export const ASL_SIGNS = [
     tips: 'Combine I, L, and Y fingers into one single iconic sign.'
   },
   {
+    name: 'FUCK YOU',
+    category: 'Conversational',
+    badge: 'Expressive',
+    description: 'Middle finger extended upright with all other fingers curled tightly into a closed fist.',
+    icon: '🖕',
+    tips: 'Hold your fist closed and extend only your middle finger straight up.'
+  },
+  {
     name: 'YES',
     category: 'Conversational',
     badge: 'Dynamic',
