@@ -177,6 +177,36 @@ body.clean-theme {
   transform: scaleX(-1);
 }
 
+/* Video Off Overlay */
+.video-off-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #0b0f19;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  z-index: 10;
+}
+
+.video-off-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.25rem;
+  color: #64748b;
+}
+
+.video-off-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.video-off-subtitle {
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
 /* Floating Detection Badge */
 .floating-detected-badge {
   position: absolute;

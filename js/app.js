@@ -24,6 +24,9 @@ class SignApp {
     this.btnClear = document.getElementById('btnClear');
     this.btnBackspace = document.getElementById('btnBackspace');
     this.btnMute = document.getElementById('btnMute');
+    this.btnToggleVideo = document.getElementById('btnToggleVideo');
+    this.btnResumeVideo = document.getElementById('btnResumeVideo');
+    this.videoOffOverlay = document.getElementById('videoOffOverlay');
     this.toggleAutoSpeak = document.getElementById('toggleAutoSpeak');
     this.voiceSelect = document.getElementById('voiceSelect');
 
@@ -35,6 +38,7 @@ class SignApp {
 
     // State
     this.autoSpeak = true;
+    this.isVideoActive = true;
     this.cameraInstance = null;
     this.handsInstance = null;
 
@@ -106,6 +110,15 @@ class SignApp {
       this.updateCaptionUI(this.sentenceBuilder.getFormattedSentence());
     });
 
+    // Video On/Off Toggle
+    this.btnToggleVideo?.addEventListener('click', () => {
+      this.toggleVideo();
+    });
+
+    this.btnResumeVideo?.addEventListener('click', () => {
+      this.toggleVideo(true);
+    });
+
     // Mute/Unmute Toggle
     this.btnMute?.addEventListener('click', () => {
       const isMuted = this.speech.toggleMute();
@@ -146,6 +159,48 @@ class SignApp {
         this.btnSpeak?.click();
       }
     });
+  }
+
+  toggleVideo(enable) {
+    if (typeof enable === 'boolean') {
+      this.isVideoActive = enable;
+    } else {
+      this.isVideoActive = !this.isVideoActive;
+    }
+
+    const stream = this.videoElement.srcObject;
+    if (stream) {
+      stream.getVideoTracks().forEach(track => {
+        track.enabled = this.isVideoActive;
+      });
+    }
+
+    if (!this.isVideoActive) {
+      const ctx = this.canvasElement.getContext('2d');
+      ctx.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+      if (this.videoOffOverlay) this.videoOffOverlay.style.display = 'flex';
+      if (this.btnToggleVideo) {
+        this.btnToggleVideo.textContent = '📹 Video Off';
+        this.btnToggleVideo.classList.add('muted');
+      }
+      if (this.statusBadge) {
+        this.statusBadge.textContent = 'Camera Off';
+        this.statusBadge.className = 'status-badge status-loading';
+      }
+      if (this.lastDetectedBadge) {
+        this.lastDetectedBadge.classList.remove('visible');
+      }
+    } else {
+      if (this.videoOffOverlay) this.videoOffOverlay.style.display = 'none';
+      if (this.btnToggleVideo) {
+        this.btnToggleVideo.textContent = '📹 Video On';
+        this.btnToggleVideo.classList.remove('muted');
+      }
+      if (this.statusBadge) {
+        this.statusBadge.textContent = 'Operational · 60 FPS';
+        this.statusBadge.className = 'status-badge status-online';
+      }
+    }
   }
 
   populateVoiceList() {
@@ -268,7 +323,7 @@ class SignApp {
       if (typeof window.Camera !== 'undefined') {
         this.cameraInstance = new window.Camera(this.videoElement, {
           onFrame: async () => {
-            if (this.handsInstance) {
+            if (this.handsInstance && this.isVideoActive) {
               await this.handsInstance.send({ image: this.videoElement });
             }
           },
@@ -285,7 +340,7 @@ class SignApp {
         await this.videoElement.play();
 
         const processVideoFrame = async () => {
-          if (this.videoElement.readyState >= 2) {
+          if (this.videoElement.readyState >= 2 && this.isVideoActive) {
             await this.handsInstance.send({ image: this.videoElement });
           }
           requestAnimationFrame(processVideoFrame);
