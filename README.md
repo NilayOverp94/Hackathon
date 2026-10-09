@@ -1,59 +1,53 @@
-# 🤟 SignPulse AI · Real-Time ASL Interpreter & Voice Engine
+# SignPulse AI · Real-Time ASL Interpreter & Voice Engine
 
 > **Accessibility-First Computer Vision System**: A real-time web application that translates American Sign Language (ASL) gestures into live captions and natural spoken voice using an ordinary webcam at 30–60 FPS with sub-20ms latency. Zero API keys, zero cloud transmission, 100% private and on-device.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Platform: Web](https://img.shields.io/badge/Platform-Web%20(Chrome%20%7C%20Safari%20%7C%20Edge)-orange.svg)]()
-[![MediaPipe: Hands](https://img.shields.io/badge/MediaPipe-Hands%20v0.4-green.svg)]()
-[![Zero API Keys](https://img.shields.io/badge/API%20Keys-Zero%20(100%25%20On--Device)-brightgreen.svg)]()
-[![Deployment: Vercel Ready](https://img.shields.io/badge/Deployment-Vercel%20Edge-black.svg)]()
+---
+
+##  Highlights & Key Innovations
+
+- ** Zero Cloud Latency (~12ms inference)**: The entire computer vision pipeline runs locally in the browser over WebAssembly (Wasm) and WebGL. No expensive cloud GPU servers or streaming video round-trips.
+- ** 100% Privacy Guaranteed**: Video frames never leave the user's local device. Fully compliant with strict privacy requirements.
+- ** 60+ ASL Signs Recognized**: Full A–Z fingerspelling alphabet, numbers 1–8, 27 conversational signs, and natural control gestures (swipe backspace, palm space).
+- ** Gboard-Style Word Prediction Engine**: Client-side predictive text algorithm suggests full words as you fingerspell, reducing typing effort by over 60%.
+- ** Multi-Accent Voice Synthesis**: Supports regional accents across ** US English,  British English,  Indian English,  Australian English,  Canadian,  Irish**, and international voices with live audio preview and persistence.
+- ** Interactive ASL Reference Guide**: In-app modal with search, category filtering, visual icons, and step-by-step how-to instructions for all 63 signs.
+- ** Monochromatic Minimalist HUD**: Clean hand skeleton joint visualization, live FPS & inference latency counter, fullscreen toggle, and distraction-free dark UI.
 
 ---
 
-## ✨ Highlights & Key Innovations
-
-- **⚡ Zero Cloud Latency (~12ms inference)**: The entire computer vision pipeline runs locally in the browser over WebAssembly (Wasm) and WebGL. No expensive cloud GPU servers or streaming video round-trips.
-- **🔒 100% Privacy Guaranteed**: Video frames never leave the user's local device. Fully compliant with strict privacy requirements.
-- **📚 60+ ASL Signs Recognized**: Full A–Z fingerspelling alphabet, numbers 1–8, 27 conversational signs, and natural control gestures (swipe backspace, palm space).
-- **💡 Gboard-Style Word Prediction Engine**: Client-side predictive text algorithm suggests full words as you fingerspell, reducing typing effort by over 60%.
-- **🎙️ Multi-Accent Voice Synthesis**: Supports regional accents across **🇺🇸 US English, 🇬🇧 British English, 🇮🇳 Indian English, 🇦🇺 Australian English, 🇨🇦 Canadian, 🇮🇪 Irish**, and international voices with live audio preview and persistence.
-- **📖 Interactive ASL Reference Guide**: In-app modal with search, category filtering, visual icons, and step-by-step how-to instructions for all 63 signs.
-- **🎨 Monochromatic Minimalist HUD**: Clean hand skeleton joint visualization, live FPS & inference latency counter, fullscreen toggle, and distraction-free dark UI.
-
----
-
-## 🛠️ Architecture & Data Pipeline
+##  Architecture & Data Pipeline
 
 ```
- [ Webcam Feed ] ──(30-60 FPS)──> [ MediaPipe Hands (Client Wasm/WebGL) ]
+  Webcam Feed  ─────────>  MediaPipe Hands (Client Wasm/WebGL) 
                                               │
                                               ▼ (21 3D Landmarks)
-                                [ Spatial & Geometric Normalizer ]
+                                 Spatial & Geometric Normalizer 
                                               │
                ┌──────────────────────────────┴──────────────────────────────┐
                ▼                                                             ▼
-     [ Static Gesture Engine ]                                  [ Dynamic Motion Tracker ]
+      Static Gesture Engine                                    Dynamic Motion Tracker 
   (A-Z, 1-8, OK, ILY, Fist, etc.)                             (Wave Hello, Thank You, Happy)
                │                                                             │
                └──────────────────────────────┬──────────────────────────────┘
                                               │
                                               ▼
-                                 [ Hold Stabilizer & Debounce ]
+                                  Hold Stabilizer & Debounce 
                                               │
                                               ▼
-                                 [ Sentence & Grammar Engine ]
+                                  Sentence & Grammar Engine 
                                  ├── Predictive Word Autocomplete
                                  └── Natural Punctuation Formatter
                                               │
                      ┌────────────────────────┴────────────────────────┐
                      ▼                                                 ▼
-          [ Live Caption Subtitles ]                       [ Speech Synthesis Engine ]
+           Live Caption Subtitles                         Speech Synthesis Engine 
          (Word suggestions & cursor)                     (Accents: US, UK, IN, AU, etc.)
 ```
 
 ---
 
-## 🚀 Quick Start (Zero Dependencies)
+##  Quick Start (Zero Dependencies)
 
 SignPulse AI is built using pure modern web standards (Vanilla JavaScript ES6 modules, HTML5, CSS3). **No Node.js or build steps required.**
 
@@ -73,7 +67,7 @@ Open **`http://localhost:8080`** in Google Chrome, Microsoft Edge, or Safari. Al
 
 ---
 
-## 🌐 Deploy to Vercel in 30 Seconds
+##  Deploy to Vercel in 30 Seconds
 
 The repository includes a ready-to-use [`vercel.json`](vercel.json) configuration:
 
@@ -85,7 +79,7 @@ The repository includes a ready-to-use [`vercel.json`](vercel.json) configuratio
 
 ---
 
-## 📖 Supported Sign Language Dictionary (63 Gestures)
+##  Supported Sign Language Dictionary (63 Gestures)
 
 ### 1. Everyday & Conversational Phrases (27 Signs)
 | Sign / Phrase | Icon | How to Perform |
@@ -163,29 +157,29 @@ The repository includes a ready-to-use [`vercel.json`](vercel.json) configuratio
 ---
 
 ### 4. Smart Navigation Controls
-- **SPACE (`␣`)**: Turn open flat hand horizontally.
-- **BACKSPACE (`⌫`)**: Swipe hand swiftly to the left in the air to erase the previous letter immediately.
+- **SPACE **: Turn open flat hand horizontally.
+- **BACKSPACE **: Swipe hand swiftly to the left in the air to erase the previous letter immediately.
 - **CLEAR**: On-screen button or gesture reset to start fresh.
 
 ---
 
-## 🎛️ Multi-Accent Voice Engine
+##  Multi-Accent Voice Engine
 
 SignPulse AI includes a native accent picker integrated directly into the action toolbar:
 - **Accents Supported**:
-  - 🇺🇸 US English (Samantha, Alex, Google US, Natural)
-  - 🇬🇧 British English (Daniel, Oliver, Serena)
-  - 🇮🇳 Indian English (Rishi, Veena, Google हिन्दी/English)
-  - 🇦🇺 Australian English (Karen)
-  - 🇨🇦 Canadian English
-  - 🇮🇪 Irish English
-  - 🌐 International & Multilingual voices
+  -  US English (Samantha, Alex, Google US, Natural)
+  -  British English (Daniel, Oliver, Serena)
+  -  Indian English (Rishi, Veena, Google हिन्दी/English)
+  -  Australian English (Karen)
+  -  Canadian English
+  -  Irish English
+  -  International & Multilingual voices
 - **Real-Time Preview**: Hear a sample upon switching voices.
 - **Persistent Preferences**: Saves selected accent to `localStorage` automatically.
 
 ---
 
-## 💻 Tech Stack Overview
+##  Tech Stack Overview
 
 | Layer | Technologies Used |
 |---|---|
@@ -199,6 +193,6 @@ SignPulse AI includes a native accent picker integrated directly into the action
 
 ---
 
-## 📄 License
+##  License
 
 This project is licensed under the **MIT License**. Feel free to use, modify, and distribute for accessibility research, education, and hackathon projects.
