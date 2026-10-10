@@ -79,9 +79,11 @@ The repository includes a ready-to-use [`vercel.json`](vercel.json) configuratio
 
 ---
 
-##  Supported Sign Language Dictionary (63 Gestures)
+## 📖 Supported Sign Language Dictionary (Curated Conversational Signs)
 
-### 1. Everyday & Conversational Phrases (27 Signs)
+SignPulse AI is calibrated for zero-noise conversational recognition, focusing exclusively on full words, high-confidence conversational phrases, and gestures rather than stray letters or digit triggers:
+
+### 1. Conversational Gestures & Phrases (15 Signs)
 | Sign / Phrase | Icon | How to Perform |
 |---|:---:|---|
 | **HELLO / WAVE** | 👋 | Open palm waving side-to-side (oscillating motion). |
@@ -96,69 +98,17 @@ The repository includes a ready-to-use [`vercel.json`](vercel.json) configuratio
 | **NO** | ❌ | Cross 2 fingers of different hands (index fingers) to form an X. |
 | **PLEASE** | 🤙 | Thumb and Pinky finger extended outward, middle 3 fingers curled in. |
 | **SORRY** | ☝️ | Index finger extended, hovering/wagging side-to-side (right and left). |
-| **MORE** | 🫳 | All 5 fingertips pinched together facing upright. |
-| **STOP** | ✋ | Flat vertical palm facing directly toward the camera. |
-| **WHERE** | 🤷 | Index finger extended shaking side-to-side in a question. |
-| **WATER** | 💧 | "W" handshape (3 middle fingers) tapped near chin/mouth. |
-| **EAT / FOOD** | 🥪 | Fingertips bunched together touching near mouth. |
-| **DRINK** | 🥤 | Hand curled like holding a glass tilted toward mouth. |
-| **TIME** | ⌚ | Index finger tapping the opposite wrist (watch gesture). |
-| **YOU** | 🫵 | Index finger pointing forward toward the camera. |
-| **ME / I** | 👤 | Index finger pointing inwards to your chest. |
-| **LOOK / SEE** | 👀 | "V" peace sign pointing forward toward camera. |
-| **FINE** | 🖐️ | Open 5-finger hand with thumb touching chest area. |
 | **HELP** | 🤝 | Thumbs-up fist resting atop a flat open palm (Two-hand). |
-| **WORK** | 🔨 | One fist tapping over the wrist of the other fist (Two-hand). |
-| **PLAY** | 🎮 | Both hands showing "Y" (shaka) shaking together (Two-hand). |
+| **STOP** | 🛑 | Flat vertical palm facing camera or one flat hand chopping onto flat palm. |
+| **WATER** | 💧 | "W" handshape (3 middle fingers) held near chin/mouth. |
 
 ---
 
-### 2. Complete ASL Alphabet (26 Letters)
-- **A**: Fist with thumb resting alongside index finger.
-- **B**: Four fingers upright, thumb folded across palm.
-- **C**: Fingers curved forming a "C" cup shape.
-- **D**: Index pointing up; thumb touches middle, ring, pinky tips.
-- **E**: Four fingertips curled resting atop folded thumb.
-- **F**: Index and thumb form circle, other 3 fingers straight upright.
-- **G**: Index pointing horizontally with thumb parallel.
-- **H**: Index & Middle extended horizontally side-by-side.
-- **I**: Pinky straight up, other fingers folded.
-- **J**: Pinky tracing a "J" hook in the air.
-- **K**: Index up, middle tilted forward, thumb between them.
-- **L**: Thumb and Index forming an "L" at 90°.
-- **M**: Thumb tucked under first three fingers.
-- **N**: Thumb tucked under first two fingers.
-- **O**: All fingertips touching thumb tip in an "O" shape.
-- **P**: "K" handshape pointed downwards.
-- **Q**: "G" handshape pointed downwards.
-- **R**: Index and Middle fingers crossed over each other.
-- **S**: Tight fist with thumb crossed in front of fingers.
-- **T**: Thumb tucked between Index and Middle fingers.
-- **U**: Index and Middle fingers held tightly together upright.
-- **V**: Index and Middle fingers spread in a V (Peace sign).
-- **W**: Index, Middle, and Ring fingers spread upright (W shape).
-- **X**: Index finger bent into a hook/claw shape.
-- **Y**: Thumb and Pinky extended outward (Shaka sign).
-- **Z**: Index finger tracing a "Z" path in the air.
-
----
-
-### 3. ASL Numbers (1–8 Digits)
-- **1**: Single index finger pointing straight up.
-- **2**: Index and middle fingers upright in a V shape.
-- **3**: Thumb, index, and middle fingers extended (official ASL 3).
-- **4**: Four fingers upright, thumb tucked across palm.
-- **5**: All five fingers wide open and spread.
-- **6**: Pinky tip touching thumb tip, other 3 fingers standing tall.
-- **7**: Ring fingertip touching thumb tip, other 3 fingers standing tall.
-- **8**: Middle fingertip touching thumb tip, other 3 fingers standing tall.
-
----
-
-### 4. Smart Navigation Controls
-- **SPACE **: Turn open flat hand horizontally.
-- **BACKSPACE **: Swipe hand swiftly to the left in the air to erase the previous letter immediately.
-- **CLEAR**: On-screen button or gesture reset to start fresh.
+### 2. Smart Navigation Controls (2 Actions)
+| Control | Icon | How to Perform |
+|---|:---:|---|
+| **SPACE** | ␣ | Turn open flat hand horizontally to insert word separation. |
+| **BACKSPACE** | ⌫ | Swipe hand swiftly to the left in the air to instantly delete the previous word. |
 
 ---
 
