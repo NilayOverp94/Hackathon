@@ -4,19 +4,18 @@
 
 ---
 
-##  Highlights & Key Innovations
+## 🌟 Highlights & Key Innovations
 
-- ** Zero Cloud Latency (~12ms inference)**: The entire computer vision pipeline runs locally in the browser over WebAssembly (Wasm) and WebGL. No expensive cloud GPU servers or streaming video round-trips.
-- ** 100% Privacy Guaranteed**: Video frames never leave the user's local device. Fully compliant with strict privacy requirements.
-- ** 60+ ASL Signs Recognized**: Full A–Z fingerspelling alphabet, numbers 1–8, 27 conversational signs, and natural control gestures (swipe backspace, palm space).
-- ** Gboard-Style Word Prediction Engine**: Client-side predictive text algorithm suggests full words as you fingerspell, reducing typing effort by over 60%.
-- ** Multi-Accent Voice Synthesis**: Supports regional accents across ** US English,  British English,  Indian English,  Australian English,  Canadian,  Irish**, and international voices with live audio preview and persistence.
-- ** Interactive ASL Reference Guide**: In-app modal with search, category filtering, visual icons, and step-by-step how-to instructions for all 63 signs.
-- ** Monochromatic Minimalist HUD**: Clean hand skeleton joint visualization, live FPS & inference latency counter, fullscreen toggle, and distraction-free dark UI.
+- **⚡ Zero Cloud Latency (~12ms inference)**: The entire computer vision pipeline runs locally in the browser over WebAssembly (Wasm) and WebGL. No expensive cloud GPU servers or streaming video round-trips.
+- **🔒 100% Privacy Guaranteed**: Video frames never leave the user's local device. Fully compliant with strict privacy requirements.
+- **💬 Curated High-Accuracy Conversational Signs**: 17 essential, high-confidence conversational signs and controls with zero stray letter noise (eliminating accidental letter or digit triggers).
+- **🎙️ Multi-Accent Voice Synthesis**: Supports regional accents across **🇺🇸 US English, 🇬🇧 British English, 🇮🇳 Indian English, 🇦🇺 Australian English, 🇨🇦 Canadian, 🇮🇪 Irish**, and international voices with live audio preview and persistence.
+- **📖 Interactive ASL Reference Guide**: In-app modal with search, category filtering, visual icons, and step-by-step how-to instructions for all supported signs and controls.
+- **🖥️ Monochromatic Minimalist HUD**: Clean hand skeleton joint visualization, live FPS & inference latency counter, fullscreen toggle, and distraction-free dark UI.
 
 ---
 
-##  Architecture & Data Pipeline
+## 🏗️ Architecture & Data Pipeline
 
 ```
   Webcam Feed  ─────────>  MediaPipe Hands (Client Wasm/WebGL) 
@@ -27,7 +26,7 @@
                ┌──────────────────────────────┴──────────────────────────────┐
                ▼                                                             ▼
       Static Gesture Engine                                    Dynamic Motion Tracker 
-  (A-Z, 1-8, OK, ILY, Fist, etc.)                             (Wave Hello, Thank You, Happy)
+  (OK, ILY, Please, Water, Fist, Thumbs)                     (Wave Hello, Thank You, Yes, Sorry, No Cross)
                │                                                             │
                └──────────────────────────────┬──────────────────────────────┘
                                               │
