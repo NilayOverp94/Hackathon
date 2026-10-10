@@ -1,21 +1,21 @@
-# SignPulse AI · Real-Time ASL Interpreter & Voice Engine
+# Sign Language Interpreter · Real-Time ASL Interpreter & Voice Engine
 
 > **Accessibility-First Computer Vision System**: A real-time web application that translates American Sign Language (ASL) gestures into live captions and natural spoken voice using an ordinary webcam at 30–60 FPS with sub-20ms latency. Zero API keys, zero cloud transmission, 100% private and on-device.
 
 ---
 
-## 🌟 Highlights & Key Innovations
+##  Highlights & Key Innovations
 
-- **⚡ Zero Cloud Latency (~12ms inference)**: The entire computer vision pipeline runs locally in the browser over WebAssembly (Wasm) and WebGL. No expensive cloud GPU servers or streaming video round-trips.
-- **🔒 100% Privacy Guaranteed**: Video frames never leave the user's local device. Fully compliant with strict privacy requirements.
-- **💬 Curated High-Accuracy Conversational Signs**: 17 essential, high-confidence conversational signs and controls with zero stray letter noise (eliminating accidental letter or digit triggers).
-- **🎙️ Multi-Accent Voice Synthesis**: Supports regional accents across **🇺🇸 US English, 🇬🇧 British English, 🇮🇳 Indian English, 🇦🇺 Australian English, 🇨🇦 Canadian, 🇮🇪 Irish**, and international voices with live audio preview and persistence.
-- **📖 Interactive ASL Reference Guide**: In-app modal with search, category filtering, visual icons, and step-by-step how-to instructions for all supported signs and controls.
-- **🖥️ Monochromatic Minimalist HUD**: Clean hand skeleton joint visualization, live FPS & inference latency counter, fullscreen toggle, and distraction-free dark UI.
+- ** Zero Cloud Latency (~12ms inference)**: The entire computer vision pipeline runs locally in the browser over WebAssembly (Wasm) and WebGL. No expensive cloud GPU servers or streaming video round-trips.
+- ** 100% Privacy Guaranteed**: Video frames never leave the user's local device. Fully compliant with strict privacy requirements.
+- ** Curated High-Accuracy Conversational Signs**: 17 essential, high-confidence conversational signs and controls with zero stray letter noise (eliminating accidental letter or digit triggers).
+- ** Multi-Accent Voice Synthesis**: Supports regional accents across ** US English,  British English,  Indian English,  Australian English,  Canadian,  Irish**, and international voices with live audio preview and persistence.
+- ** Interactive ASL Reference Guide**: In-app modal with search, category filtering, visual icons, and step-by-step how-to instructions for all supported signs and controls.
+- ** Monochromatic Minimalist HUD**: Clean hand skeleton joint visualization, live FPS & inference latency counter, fullscreen toggle, and distraction-free dark UI.
 
 ---
 
-## 🏗️ Architecture & Data Pipeline
+##  Architecture & Data Pipeline
 
 ```
   Webcam Feed  ─────────>  MediaPipe Hands (Client Wasm/WebGL) 
